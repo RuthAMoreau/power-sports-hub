@@ -63,14 +63,19 @@ app.use("/announcements", announcementRoutes);
 
 // 404 handler
 app.use((req, res) => {
-  res.status(404).send("Page not found");
+  res.status(404).render("errors/404");
 });
 
-// Error handler
+// Global error handler
 app.use((err, req, res, next) => {
-  console.error(err);
+  console.error("Application error:", err);
 
-  res.status(500).send("Something went wrong.");
+  res.status(err.status || 500).render("errors/500", {
+    errorMessage:
+      process.env.NODE_ENV === "development"
+        ? err.message
+        : null
+  });
 });
 
 // Start server
