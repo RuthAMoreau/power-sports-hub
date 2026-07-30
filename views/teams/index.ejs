@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0"
@@ -14,7 +15,10 @@
     rel="stylesheet"
   >
 
-  <link rel="stylesheet" href="/css/style.css">
+  <link
+    rel="stylesheet"
+    href="/css/style.css"
+  >
 </head>
 
 <body>
@@ -46,37 +50,56 @@
       <ul class="navbar-nav ms-auto">
 
         <li class="nav-item">
-          <a class="nav-link" href="/dashboard">
+          <a
+            class="nav-link"
+            href="/dashboard"
+          >
             Dashboard
           </a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link active" href="/teams">
+          <a
+            class="nav-link active"
+            href="/teams"
+            aria-current="page"
+          >
             Teams
           </a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link" href="/players">
+          <a
+            class="nav-link"
+            href="/players"
+          >
             Players
           </a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link" href="/events">
+          <a
+            class="nav-link"
+            href="/events"
+          >
             Schedule
           </a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link" href="/announcements">
+          <a
+            class="nav-link"
+            href="/announcements"
+          >
             Announcements
           </a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link" href="/logout">
+          <a
+            class="nav-link"
+            href="/logout"
+          >
             Logout
           </a>
         </li>
@@ -95,25 +118,38 @@
   >
 
     <div>
+
       <h1 class="mb-1">
         Teams
       </h1>
 
       <p class="text-muted mb-0">
-        Manage your Power Sports Hub teams.
+        View and manage Power Sports Hub teams.
       </p>
+
     </div>
 
-    <a
-      href="/teams/new"
-      class="btn btn-primary"
-    >
-      + Create Team
-    </a>
+    <% if (
+      user &&
+      (
+        user.role === "admin" ||
+        user.role === "coach"
+      )
+    ) { %>
+
+      <a
+        href="/teams/new"
+        class="btn btn-primary"
+      >
+        + Create Team
+      </a>
+
+    <% } %>
 
   </div>
 
   <!-- Team search -->
+
   <form
     action="/teams"
     method="GET"
@@ -130,7 +166,7 @@
       </label>
 
       <input
-        type="text"
+        type="search"
         id="search"
         name="search"
         class="form-control"
@@ -184,12 +220,22 @@
 
         No teams have been created yet.
 
-        <a
-          href="/teams/new"
-          class="alert-link"
-        >
-          Create the first team.
-        </a>
+        <% if (
+          user &&
+          (
+            user.role === "admin" ||
+            user.role === "coach"
+          )
+        ) { %>
+
+          <a
+            href="/teams/new"
+            class="alert-link"
+          >
+            Create the first team.
+          </a>
+
+        <% } %>
 
       <% } %>
 
@@ -218,7 +264,7 @@
 
         <div class="col-12 col-md-6 col-lg-4">
 
-          <div class="card shadow-sm h-100">
+          <article class="card shadow-sm h-100">
 
             <div class="card-body d-flex flex-column">
 
@@ -261,32 +307,42 @@
                   View Roster
                 </a>
 
-                <a
-                  href="/players/new?team=<%= team._id %>"
-                  class="btn btn-outline-success"
-                >
-                  Add Player
-                </a>
+                <% if (
+                  user &&
+                  (
+                    user.role === "admin" ||
+                    user.role === "coach"
+                  )
+                ) { %>
 
-                <a
-                  href="/events/new?team=<%= team._id %>"
-                  class="btn btn-outline-info"
-                >
-                  Schedule Event
-                </a>
+                  <a
+                    href="/players/new?team=<%= team._id %>"
+                    class="btn btn-outline-success"
+                  >
+                    Add Player
+                  </a>
 
-                <a
-                  href="/teams/<%= team._id %>/edit"
-                  class="btn btn-outline-secondary"
-                >
-                  Edit Team
-                </a>
+                  <a
+                    href="/events/new?team=<%= team._id %>"
+                    class="btn btn-outline-info"
+                  >
+                    Schedule Event
+                  </a>
+
+                  <a
+                    href="/teams/<%= team._id %>/edit"
+                    class="btn btn-outline-secondary"
+                  >
+                    Edit Team
+                  </a>
+
+                <% } %>
 
               </div>
 
             </div>
 
-          </div>
+          </article>
 
         </div>
 
@@ -301,7 +357,7 @@
         aria-label="Team page navigation"
       >
 
-        <ul class="pagination justify-content-center">
+        <ul class="pagination justify-content-center flex-wrap">
 
           <li
             class="page-item <%= page === 1 ? 'disabled' : '' %>"
@@ -311,6 +367,10 @@
               class="page-link"
               href="/teams?page=<%= page - 1 %>&search=<%= encodeURIComponent(search || '') %>"
               aria-label="Previous page"
+              <%= page === 1
+                ? 'tabindex="-1" aria-disabled="true"'
+                : ""
+              %>
             >
               Previous
             </a>
@@ -330,6 +390,10 @@
               <a
                 class="page-link"
                 href="/teams?page=<%= pageNumber %>&search=<%= encodeURIComponent(search || '') %>"
+                <%= pageNumber === page
+                  ? 'aria-current="page"'
+                  : ""
+                %>
               >
                 <%= pageNumber %>
               </a>
@@ -346,6 +410,10 @@
               class="page-link"
               href="/teams?page=<%= page + 1 %>&search=<%= encodeURIComponent(search || '') %>"
               aria-label="Next page"
+              <%= page === totalPages
+                ? 'tabindex="-1" aria-disabled="true"'
+                : ""
+              %>
             >
               Next
             </a>
