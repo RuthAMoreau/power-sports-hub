@@ -7,7 +7,11 @@ const mongoose = require("mongoose");
 const session = require("express-session");
 const methodOverride = require("method-override");
 const path = require("path");
+
+// Import Routes
 const authRoutes = require("./routes/auth");
+const dashboardRoutes = require("./routes/dashboard");
+const teamRoutes = require("./routes/team");
 
 // 3. IMPORT LOCAL FILES
 const connectDB = require("./config/database");
@@ -37,6 +41,27 @@ app.use(
 );
 
 app.use("/", authRoutes);
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "powersportshubsecret",
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+
+// Register Routes
+app.use("/", authRoutes);
+app.use("/dashboard", dashboardRoutes);
+app.use("/teams", teamRoutes);
+
+// View Engine
+app.set("view engine", "ejs");
+
+// Home Route
+app.get("/", (req, res) => {
+  res.render("index");
+});
 
 // 7. VIEW ENGINE
 app.set("view engine", "ejs");
