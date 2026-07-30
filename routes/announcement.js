@@ -6,12 +6,27 @@ const auth = require("../middleware/auth");
 
 const router = express.Router();
 
-// Display announcements with audience filtering and pagination
+// Display announcements with filtering, sorting, and pagination
 router.get("/", auth, async (req, res) => {
   try {
     const audience = req.query.audience
       ? req.query.audience.trim()
       : "";
+
+    const allowedSortOptions = [
+      "newest",
+      "oldest",
+      "title-asc",
+      "title-desc"
+    ];
+
+    const requestedSort = req.query.sort
+      ? req.query.sort.trim()
+      : "newest";
+
+    const sort = allowedSortOptions.includes(requestedSort)
+      ? requestedSort
+      : "newest";
 
     const page = Math.max(
       parseInt(req.query.page, 10) || 1,
@@ -24,6 +39,24 @@ router.get("/", auth, async (req, res) => {
 
     if (audience) {
       query.audience = audience;
+    }
+
+    let sortOption = {
+      createdAt: -1
+    };
+
+    if (sort === "oldest") {
+      sortOption = {
+        createdAt: 1
+      };
+    } else if (sort === "title-asc") {
+      sortOption = {
+        title: 1
+      };
+    } else if (sort === "title-desc") {
+      sortOption = {
+        title: -1
+      };
     }
 
     const totalAnnouncements =
@@ -44,13 +77,14 @@ router.get("/", auth, async (req, res) => {
 
     const announcements = await Announcement.find(query)
       .populate("author", "firstName lastName")
-      .sort({ createdAt: -1 })
+      .sort(sortOption)
       .skip(skip)
       .limit(limit);
 
     res.render("announcements/index", {
       announcements,
       audience,
+      sort,
       page: currentPage,
       totalPages,
       totalAnnouncements,
