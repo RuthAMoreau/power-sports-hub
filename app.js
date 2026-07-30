@@ -14,6 +14,7 @@ const connectDB = require("./config/database");
 const authRoutes = require("./routes/auth");
 const dashboardRoutes = require("./routes/dashboard");
 const teamRoutes = require("./routes/team");
+const Player = require("../models/Player");
 
 // Initialize app
 const app = express();
@@ -29,6 +30,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "public")));
+
 
 app.use(
   session({
@@ -46,6 +48,7 @@ app.use(
 app.use("/", authRoutes);
 app.use("/dashboard", dashboardRoutes);
 app.use("/teams", teamRoutes);
+app.use("/players", playerRoutes);
 
 // Home page
 app.get("/", (req, res) => {
