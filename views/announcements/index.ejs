@@ -130,12 +130,22 @@
 
     </div>
 
-    <a
-      href="/announcements/new"
-      class="btn btn-primary"
-    >
-      Add Announcement
-    </a>
+    <% if (
+      user &&
+      (
+        user.role === "admin" ||
+        user.role === "coach"
+      )
+    ) { %>
+
+      <a
+        href="/announcements/new"
+        class="btn btn-primary"
+      >
+        Add Announcement
+      </a>
+
+    <% } %>
 
   </div>
 
@@ -338,12 +348,22 @@
 
         No announcements have been posted yet.
 
-        <a
-          href="/announcements/new"
-          class="alert-link"
-        >
-          Create the first announcement.
-        </a>
+        <% if (
+          user &&
+          (
+            user.role === "admin" ||
+            user.role === "coach"
+          )
+        ) { %>
+
+          <a
+            href="/announcements/new"
+            class="alert-link"
+          >
+            Create the first announcement.
+          </a>
+
+        <% } %>
 
       <% } %>
 
@@ -460,31 +480,45 @@
 
               </p>
 
-              <div class="d-flex flex-wrap gap-2 mt-auto pt-3">
+              <% if (
+                user &&
+                (
+                  user.role === "admin" ||
+                  user.role === "coach"
+                )
+              ) { %>
 
-                <a
-                  href="/announcements/<%= announcement._id %>/edit"
-                  class="btn btn-sm btn-outline-primary"
-                >
-                  Edit
-                </a>
+                <div class="d-flex flex-wrap gap-2 mt-auto pt-3">
 
-                <form
-                  action="/announcements/<%= announcement._id %>?_method=DELETE"
-                  method="POST"
-                  onsubmit="return confirm('Delete this announcement?');"
-                >
-
-                  <button
-                    type="submit"
-                    class="btn btn-sm btn-outline-danger"
+                  <a
+                    href="/announcements/<%= announcement._id %>/edit"
+                    class="btn btn-sm btn-outline-primary"
                   >
-                    Delete
-                  </button>
+                    Edit
+                  </a>
 
-                </form>
+                  <% if (user.role === "admin") { %>
 
-              </div>
+                    <form
+                      action="/announcements/<%= announcement._id %>?_method=DELETE"
+                      method="POST"
+                      onsubmit="return confirm('Delete this announcement?');"
+                    >
+
+                      <button
+                        type="submit"
+                        class="btn btn-sm btn-outline-danger"
+                      >
+                        Delete
+                      </button>
+
+                    </form>
+
+                  <% } %>
+
+                </div>
+
+              <% } %>
 
             </div>
 
