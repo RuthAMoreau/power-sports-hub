@@ -1,32 +1,30 @@
-// 1. LOAD ENVIRONMENT VARIABLES FIRST
+// Load environment variables first
 require("dotenv").config();
 
-// 2. IMPORT PACKAGES
+// Import packages
 const express = require("express");
-const mongoose = require("mongoose");
 const session = require("express-session");
 const methodOverride = require("method-override");
 const path = require("path");
 
-// Import Routes
+// Import local files
+const connectDB = require("./config/database");
+
+// Import routes
 const authRoutes = require("./routes/auth");
 const dashboardRoutes = require("./routes/dashboard");
 const teamRoutes = require("./routes/team");
 
-// 3. IMPORT LOCAL FILES
-const connectDB = require("./config/database");
-
-// 4. INITIALIZE APP
+// Initialize app
 const app = express();
 
-// 5. CONNECT TO DATABASE
-// Note: You had two different database connection methods competing here. 
-// We are using the explicit one that utilizes process.env.MONGO_URI.
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('Database connected successfully'))
-  .catch((err) => console.error('Database Connection Error:', err));
+// Connect to MongoDB
+connectDB();
 
-// 6. MIDDLEWARE
+// View engine
+app.set("view engine", "ejs");
+
+// Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(methodOverride("_method"));
@@ -37,42 +35,37 @@ app.use(
     secret: process.env.SESSION_SECRET || "powersportshubsecret",
     resave: false,
     saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24
+    }
   })
 );
 
-app.use("/", authRoutes);
-
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "powersportshubsecret",
-    resave: false,
-    saveUninitialized: false,
-  })
-);
-
-// Register Routes
+// Routes
 app.use("/", authRoutes);
 app.use("/dashboard", dashboardRoutes);
 app.use("/teams", teamRoutes);
 
-// View Engine
-app.set("view engine", "ejs");
-
-// Home Route
+// Home page
 app.get("/", (req, res) => {
   res.render("index");
 });
 
-// 7. VIEW ENGINE
-app.set("view engine", "ejs");
-
-// 8. ROUTES
-app.get("/", (req, res) => {
-  res.render("index");
+// 404 handler
+app.use((req, res) => {
+  res.status(404).send("Page not found");
 });
 
-// 9. START SERVER
+// Error handler
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).send("Something went wrong");
+});
+
+// Start server
 const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
