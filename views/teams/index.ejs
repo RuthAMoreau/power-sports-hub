@@ -86,7 +86,7 @@
     </a>
   </div>
 
-  <% if (teams.length === 0) { %>
+  <% if (!teams || teams.length === 0) { %>
 
     <div class="alert alert-info">
       No teams have been created yet.
@@ -126,14 +126,23 @@
                 <strong>Coach:</strong>
 
                 <% if (team.coach) { %>
-                  <%= team.coach.firstName %>
-                  <%= team.coach.lastName %>
+
+                  <% if (team.coach.firstName || team.coach.lastName) { %>
+                    <%= team.coach.firstName || "" %>
+                    <%= team.coach.lastName || "" %>
+                  <% } else if (team.coach.name) { %>
+                    <%= team.coach.name %>
+                  <% } else { %>
+                    Assigned
+                  <% } %>
+
                 <% } else { %>
                   Not assigned
                 <% } %>
               </p>
 
-              <div class="mt-auto">
+              <div class="mt-auto d-flex flex-wrap gap-2">
+
                 <a
                   href="/teams/<%= team._id %>"
                   class="btn btn-outline-primary"
@@ -147,6 +156,7 @@
                 >
                   Add Player
                 </a>
+
               </div>
 
             </div>
