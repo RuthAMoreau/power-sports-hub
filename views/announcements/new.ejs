@@ -1,1 +1,221 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>
+    Add Announcement | Power Sports Hub
+  </title>
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+
+  <link
+    rel="stylesheet"
+    href="/css/style.css"
+  >
+</head>
+
+<body>
+
+<nav
+  class="navbar navbar-expand-lg navbar-dark bg-primary"
+>
+  <div class="container">
+
+    <a class="navbar-brand" href="/">
+      Power Sports Hub
+    </a>
+
+    <div class="navbar-nav ms-auto">
+
+      <a
+        class="nav-link"
+        href="/dashboard"
+      >
+        Dashboard
+      </a>
+
+      <a
+        class="nav-link"
+        href="/teams"
+      >
+        Teams
+      </a>
+
+      <a
+        class="nav-link"
+        href="/players"
+      >
+        Players
+      </a>
+
+      <a
+        class="nav-link"
+        href="/events"
+      >
+        Schedule
+      </a>
+
+      <a
+        class="nav-link"
+        href="/announcements"
+      >
+        Announcements
+      </a>
+
+      <a
+        class="nav-link"
+        href="/logout"
+      >
+        Logout
+      </a>
+
+    </div>
+
+  </div>
+</nav>
+
+<main class="container py-5">
+
+  <div
+    class="card shadow-sm mx-auto"
+    style="max-width: 750px;"
+  >
+    <div class="card-body p-4">
+
+      <h1 class="h2">
+        Add Announcement
+      </h1>
+
+      <p class="text-muted">
+        Share an update with the organization.
+      </p>
+
+      <% if (error) { %>
+
+        <div class="alert alert-danger">
+          <%= error %>
+        </div>
+
+      <% } %>
+
+      <form
+        action="/announcements"
+        method="POST"
+      >
+
+        <div class="mb-3">
+
+          <label
+            for="title"
+            class="form-label"
+          >
+            Title
+          </label>
+
+          <input
+            type="text"
+            class="form-control"
+            id="title"
+            name="title"
+            value="<%= formData.title || '' %>"
+            maxlength="100"
+            required
+          >
+
+        </div>
+
+        <div class="mb-3">
+
+          <label
+            for="audience"
+            class="form-label"
+          >
+            Audience
+          </label>
+
+          <select
+            class="form-select"
+            id="audience"
+            name="audience"
+            required
+          >
+
+            <% [
+              "Everyone",
+              "Coaches",
+              "Parents",
+              "Players"
+            ].forEach(option => { %>
+
+              <option
+                value="<%= option %>"
+                <%= (
+                  formData.audience ||
+                  "Everyone"
+                ) === option
+                  ? "selected"
+                  : ""
+                %>
+              >
+                <%= option %>
+              </option>
+
+            <% }) %>
+
+          </select>
+
+        </div>
+
+        <div class="mb-4">
+
+          <label
+            for="message"
+            class="form-label"
+          >
+            Message
+          </label>
+
+          <textarea
+            class="form-control"
+            id="message"
+            name="message"
+            rows="7"
+            maxlength="1000"
+            required
+          ><%= formData.message || "" %></textarea>
+
+        </div>
+
+        <button
+          type="submit"
+          class="btn btn-primary"
+        >
+          Post Announcement
+        </button>
+
+        <a
+          href="/announcements"
+          class="btn btn-outline-secondary"
+        >
+          Cancel
+        </a>
+
+      </form>
+
+    </div>
+  </div>
+
+</main>
+
+</body>
+</html>
