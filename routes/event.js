@@ -7,12 +7,19 @@ const auth = require("../middleware/auth");
 
 const router = express.Router();
 
-// Display all events with event-type filtering
+// Display all events with event-type filtering and pagination
 router.get("/", auth, async (req, res) => {
   try {
     const type = req.query.type
       ? req.query.type.trim()
       : "";
+
+    const page = Math.max(
+      parseInt(req.query.page, 10) || 1,
+      1
+    );
+
+    const limit = 9;
 
     const query = {};
 
@@ -20,13 +27,28 @@ router.get("/", auth, async (req, res) => {
       query.eventType = type;
     }
 
+    const totalEvents = await Event.countDocuments(query);
+
+    const totalPages = Math.max(
+      Math.ceil(totalEvents / limit),
+      1
+    );
+
+    const currentPage = Math.min(page, totalPages);
+    const skip = (currentPage - 1) * limit;
+
     const events = await Event.find(query)
       .populate("team", "teamName ageGroup")
-      .sort({ date: 1 });
+      .sort({ date: 1 })
+      .skip(skip)
+      .limit(limit);
 
     res.render("events/index", {
       events,
       type,
+      page: currentPage,
+      totalPages,
+      totalEvents,
       user: req.session.user
     });
   } catch (err) {
