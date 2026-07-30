@@ -1,1 +1,245 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>
+    Announcements | Power Sports Hub
+  </title>
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+
+  <link
+    rel="stylesheet"
+    href="/css/style.css"
+  >
+</head>
+
+<body>
+
+<nav
+  class="navbar navbar-expand-lg navbar-dark bg-primary"
+>
+  <div class="container">
+
+    <a class="navbar-brand" href="/">
+      Power Sports Hub
+    </a>
+
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#mainNavbar"
+      aria-controls="mainNavbar"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div
+      class="collapse navbar-collapse"
+      id="mainNavbar"
+    >
+      <ul class="navbar-nav ms-auto">
+
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            href="/dashboard"
+          >
+            Dashboard
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            href="/teams"
+          >
+            Teams
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            href="/players"
+          >
+            Players
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            href="/events"
+          >
+            Schedule
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a
+            class="nav-link active"
+            href="/announcements"
+          >
+            Announcements
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            href="/logout"
+          >
+            Logout
+          </a>
+        </li>
+
+      </ul>
+    </div>
+
+  </div>
+</nav>
+
+<main class="container py-5">
+
+  <div
+    class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4"
+  >
+    <div>
+      <h1 class="mb-1">
+        Announcements
+      </h1>
+
+      <p class="text-muted mb-0">
+        View updates for the sports organization.
+      </p>
+    </div>
+
+    <a
+      href="/announcements/new"
+      class="btn btn-primary"
+    >
+      Add Announcement
+    </a>
+  </div>
+
+  <% if (
+    !announcements ||
+    announcements.length === 0
+  ) { %>
+
+    <div class="alert alert-info">
+      No announcements have been posted yet.
+
+      <a
+        href="/announcements/new"
+        class="alert-link"
+      >
+        Create the first announcement.
+      </a>
+    </div>
+
+  <% } else { %>
+
+    <div class="row g-4">
+
+      <% announcements.forEach(
+        announcement => {
+      %>
+
+        <div class="col-12 col-lg-6">
+
+          <article class="card h-100 shadow-sm">
+
+            <div class="card-body">
+
+              <div
+                class="d-flex justify-content-between align-items-start gap-3 mb-2"
+              >
+                <h2 class="h4 card-title mb-0">
+                  <%= announcement.title %>
+                </h2>
+
+                <span class="badge text-bg-primary">
+                  <%= announcement.audience %>
+                </span>
+              </div>
+
+              <p class="card-text">
+                <%= announcement.message %>
+              </p>
+
+              <hr>
+
+              <p class="small text-muted mb-1">
+                <strong>Posted:</strong>
+
+                <%= announcement.createdAt
+                  .toLocaleDateString()
+                %>
+              </p>
+
+              <p class="small text-muted mb-0">
+                <strong>Author:</strong>
+
+                <% if (announcement.author) { %>
+
+                  <% if (
+                    announcement.author.firstName ||
+                    announcement.author.lastName
+                  ) { %>
+
+                    <%= announcement.author.firstName
+                      || ""
+                    %>
+
+                    <%= announcement.author.lastName
+                      || ""
+                    %>
+
+                  <% } else { %>
+
+                    <%= announcement.author.name
+                      || "User"
+                    %>
+
+                  <% } %>
+
+                <% } else { %>
+                  Unknown
+                <% } %>
+              </p>
+
+            </div>
+
+          </article>
+
+        </div>
+
+      <% }) %>
+
+    </div>
+
+  <% } %>
+
+</main>
+
+<script
+  src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+></script>
+
+</body>
+</html>
