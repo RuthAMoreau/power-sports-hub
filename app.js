@@ -14,7 +14,7 @@ const connectDB = require("./config/database");
 const authRoutes = require("./routes/auth");
 const dashboardRoutes = require("./routes/dashboard");
 const teamRoutes = require("./routes/team");
-const Player = require("../models/Player");
+const playerRoutes = require("./routes/player");
 
 // Initialize app
 const app = express();
