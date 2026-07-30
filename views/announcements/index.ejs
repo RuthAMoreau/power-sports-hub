@@ -139,7 +139,7 @@
 
   </div>
 
-  <!-- Audience Filter and Sorting -->
+  <!-- Search, audience filter, and sorting -->
 
   <form
     action="/announcements"
@@ -147,7 +147,27 @@
     class="row g-2 mb-4"
   >
 
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-lg-4">
+
+      <label
+        for="search"
+        class="visually-hidden"
+      >
+        Search announcements
+      </label>
+
+      <input
+        type="search"
+        id="search"
+        name="search"
+        class="form-control"
+        placeholder="Search title or message"
+        value="<%= search || "" %>"
+      >
+
+    </div>
+
+    <div class="col-12 col-md-6 col-lg-3">
 
       <label
         for="audience"
@@ -198,7 +218,7 @@
 
     </div>
 
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md-6 col-lg-3">
 
       <label
         for="sort"
@@ -276,7 +296,33 @@
 
     <div class="alert alert-info">
 
-      <% if (audience) { %>
+      <% if (search && audience) { %>
+
+        No announcements matched
+        <strong>"<%= search %>"</strong>
+        for
+        <strong><%= audience %></strong>.
+
+        <a
+          href="/announcements"
+          class="alert-link"
+        >
+          Clear the search and filters.
+        </a>
+
+      <% } else if (search) { %>
+
+        No announcements matched
+        <strong>"<%= search %>"</strong>.
+
+        <a
+          href="/announcements"
+          class="alert-link"
+        >
+          Clear the search.
+        </a>
+
+      <% } else if (audience) { %>
 
         No announcements were found for
         <strong><%= audience %></strong>.
@@ -305,11 +351,29 @@
 
   <% } else { %>
 
-    <% if (audience) { %>
+    <% if (search || audience) { %>
 
       <p class="text-muted mb-2">
-        Showing announcements for
-        <strong><%= audience %></strong>.
+
+        <% if (search && audience) { %>
+
+          Showing results for
+          <strong>"<%= search %>"</strong>
+          in
+          <strong><%= audience %></strong> announcements.
+
+        <% } else if (search) { %>
+
+          Showing results for
+          <strong>"<%= search %>"</strong>.
+
+        <% } else if (audience) { %>
+
+          Showing announcements for
+          <strong><%= audience %></strong>.
+
+        <% } %>
+
       </p>
 
     <% } %>
@@ -439,16 +503,17 @@
         aria-label="Announcement page navigation"
       >
 
-        <ul class="pagination justify-content-center">
+        <ul class="pagination justify-content-center flex-wrap">
 
           <li
-            class="page-item <%= page === 1 ? 'disabled' : '' %>"
+            class="page-item <%= page === 1 ? "disabled" : "" %>"
           >
 
             <a
               class="page-link"
-              href="/announcements?page=<%= page - 1 %>&audience=<%= encodeURIComponent(audience || '') %>&sort=<%= encodeURIComponent(sort || 'newest') %>"
+              href="/announcements?page=<%= page - 1 %>&search=<%= encodeURIComponent(search || '') %>&audience=<%= encodeURIComponent(audience || '') %>&sort=<%= encodeURIComponent(sort || 'newest') %>"
               aria-label="Previous page"
+              <%= page === 1 ? 'tabindex="-1" aria-disabled="true"' : "" %>
             >
               Previous
             </a>
@@ -462,15 +527,15 @@
           ) { %>
 
             <li
-              class="page-item <%= pageNumber === page ? 'active' : '' %>"
+              class="page-item <%= pageNumber === page ? "active" : "" %>"
             >
 
               <a
                 class="page-link"
-                href="/announcements?page=<%= pageNumber %>&audience=<%= encodeURIComponent(audience || '') %>&sort=<%= encodeURIComponent(sort || 'newest') %>"
+                href="/announcements?page=<%= pageNumber %>&search=<%= encodeURIComponent(search || '') %>&audience=<%= encodeURIComponent(audience || '') %>&sort=<%= encodeURIComponent(sort || 'newest') %>"
                 <%= pageNumber === page
                   ? 'aria-current="page"'
-                  : ''
+                  : ""
                 %>
               >
                 <%= pageNumber %>
@@ -481,13 +546,17 @@
           <% } %>
 
           <li
-            class="page-item <%= page === totalPages ? 'disabled' : '' %>"
+            class="page-item <%= page === totalPages ? "disabled" : "" %>"
           >
 
             <a
               class="page-link"
-              href="/announcements?page=<%= page + 1 %>&audience=<%= encodeURIComponent(audience || '') %>&sort=<%= encodeURIComponent(sort || 'newest') %>"
+              href="/announcements?page=<%= page + 1 %>&search=<%= encodeURIComponent(search || '') %>&audience=<%= encodeURIComponent(audience || '') %>&sort=<%= encodeURIComponent(sort || 'newest') %>"
               aria-label="Next page"
+              <%= page === totalPages
+                ? 'tabindex="-1" aria-disabled="true"'
+                : ""
+              %>
             >
               Next
             </a>
