@@ -1,6 +1,7 @@
 const express = require("express");
 const Team = require("../models/Team");
 const auth = require("../middleware/auth");
+const Player = require("../models/Player");
 
 const router = express.Router();
 
@@ -30,6 +31,40 @@ router.get("/new", auth, (req, res) => {
     error: null,
     formData: {}
   });
+});
+
+// Display one team and its roster
+router.get("/:id", auth, async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).send("Invalid team ID.");
+    }
+
+    const team = await Team.findById(req.params.id).populate(
+      "coach",
+      "firstName lastName"
+    );
+
+    if (!team) {
+      return res.status(404).send("Team not found.");
+    }
+
+    const players = await Player.find({
+      team: team._id
+    }).sort({
+      lastName: 1,
+      firstName: 1
+    });
+
+    res.render("teams/show", {
+      team,
+      players,
+      user: req.session.user
+    });
+  } catch (err) {
+    console.error("Team detail error:", err);
+    res.status(500).send("Unable to load team details.");
+  }
 });
 
 // Create team
