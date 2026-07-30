@@ -2,7 +2,6 @@ require('@dotenvx/dotenvx').config(); // or require('dotenv').config();
 
 const express = require('express');
 const mongoose = require('mongoose');
-const express = require("express");
 const session = require("express-session");
 const methodOverride = require("method-override");
 const path = require("path");
