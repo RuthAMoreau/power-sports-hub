@@ -45,6 +45,7 @@
     >
 
       <div class="navbar-nav ms-auto">
+
         <a class="nav-link" href="/dashboard">
           Dashboard
         </a>
@@ -53,7 +54,11 @@
           Teams
         </a>
 
-        <a class="nav-link active" href="/players">
+        <a
+          class="nav-link active"
+          href="/players"
+          aria-current="page"
+        >
           Players
         </a>
 
@@ -68,6 +73,7 @@
         <a class="nav-link" href="/logout">
           Logout
         </a>
+
       </div>
 
     </div>
@@ -82,6 +88,7 @@
   >
 
     <div>
+
       <h1 class="mb-1">
         Players
       </h1>
@@ -89,18 +96,30 @@
       <p class="text-muted mb-0">
         View players across the organization.
       </p>
+
     </div>
 
-    <a
-      href="/players/new"
-      class="btn btn-primary"
-    >
-      Add Player
-    </a>
+    <% if (
+      user &&
+      (
+        user.role === "admin" ||
+        user.role === "coach"
+      )
+    ) { %>
+
+      <a
+        href="/players/new"
+        class="btn btn-primary"
+      >
+        Add Player
+      </a>
+
+    <% } %>
 
   </div>
 
   <!-- Search form -->
+
   <form
     action="/players"
     method="GET"
@@ -117,7 +136,7 @@
       </label>
 
       <input
-        type="text"
+        type="search"
         id="search"
         name="search"
         class="form-control"
@@ -151,7 +170,7 @@
 
   </form>
 
-  <% if (players.length === 0) { %>
+  <% if (!players || players.length === 0) { %>
 
     <div class="alert alert-info">
 
@@ -171,12 +190,22 @@
 
         No players have been added yet.
 
-        <a
-          href="/players/new"
-          class="alert-link"
-        >
-          Add the first player.
-        </a>
+        <% if (
+          user &&
+          (
+            user.role === "admin" ||
+            user.role === "coach"
+          )
+        ) { %>
+
+          <a
+            href="/players/new"
+            class="alert-link"
+          >
+            Add the first player.
+          </a>
+
+        <% } %>
 
       <% } %>
 
@@ -211,6 +240,21 @@
             <th scope="col">Position</th>
             <th scope="col">Team</th>
             <th scope="col">Parent</th>
+
+            <% if (
+              user &&
+              (
+                user.role === "admin" ||
+                user.role === "coach"
+              )
+            ) { %>
+
+              <th scope="col">
+                Actions
+              </th>
+
+            <% } %>
+
           </tr>
 
         </thead>
@@ -255,6 +299,50 @@
                 <%= player.parentName || "—" %>
               </td>
 
+              <% if (
+                user &&
+                (
+                  user.role === "admin" ||
+                  user.role === "coach"
+                )
+              ) { %>
+
+                <td>
+
+                  <div class="d-flex flex-wrap gap-2">
+
+                    <a
+                      href="/players/<%= player._id %>/edit"
+                      class="btn btn-sm btn-outline-primary"
+                    >
+                      Edit
+                    </a>
+
+                    <% if (user.role === "admin") { %>
+
+                      <form
+                        action="/players/<%= player._id %>?_method=DELETE"
+                        method="POST"
+                        onsubmit="return confirm('Delete this player?');"
+                      >
+
+                        <button
+                          type="submit"
+                          class="btn btn-sm btn-outline-danger"
+                        >
+                          Delete
+                        </button>
+
+                      </form>
+
+                    <% } %>
+
+                  </div>
+
+                </td>
+
+              <% } %>
+
             </tr>
 
           <% }) %>
@@ -272,7 +360,7 @@
         aria-label="Player page navigation"
       >
 
-        <ul class="pagination justify-content-center">
+        <ul class="pagination justify-content-center flex-wrap">
 
           <li
             class="page-item <%= page === 1 ? 'disabled' : '' %>"
@@ -282,6 +370,10 @@
               class="page-link"
               href="/players?page=<%= page - 1 %>&search=<%= encodeURIComponent(search || '') %>"
               aria-label="Previous page"
+              <%= page === 1
+                ? 'tabindex="-1" aria-disabled="true"'
+                : ""
+              %>
             >
               Previous
             </a>
@@ -301,6 +393,10 @@
               <a
                 class="page-link"
                 href="/players?page=<%= pageNumber %>&search=<%= encodeURIComponent(search || '') %>"
+                <%= pageNumber === page
+                  ? 'aria-current="page"'
+                  : ""
+                %>
               >
                 <%= pageNumber %>
               </a>
@@ -317,6 +413,10 @@
               class="page-link"
               href="/players?page=<%= page + 1 %>&search=<%= encodeURIComponent(search || '') %>"
               aria-label="Next page"
+              <%= page === totalPages
+                ? 'tabindex="-1" aria-disabled="true"'
+                : ""
+              %>
             >
               Next
             </a>
