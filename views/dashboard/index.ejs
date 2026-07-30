@@ -404,9 +404,7 @@
 
             <div class="list-group list-group-flush">
 
-              <% recentAnnouncements.forEach(
-                announcement => {
-              ) { %>
+              <% recentAnnouncements.forEach(announcement => { %>
 
                 <a
                   href="/announcements/<%= announcement._id %>/edit"
@@ -424,12 +422,13 @@
                       </h3>
 
                       <p class="small text-muted mb-1">
-                        <%= announcement.message.length > 100
+                        <%= announcement.message &&
+                        announcement.message.length > 100
                           ? announcement.message.substring(
                               0,
                               100
                             ) + "..."
-                          : announcement.message
+                          : announcement.message || ""
                         %>
                       </p>
 
