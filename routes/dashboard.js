@@ -14,44 +14,64 @@ router.get("/", auth, async (req, res) => {
     const now = new Date();
 
     const [
-      teamCount,
-      playerCount,
-      eventCount,
-      announcementCount,
+      totalTeams,
+      totalPlayers,
+      totalUpcomingEvents,
+      totalAnnouncements,
       upcomingEvents,
       recentAnnouncements
     ] = await Promise.all([
       Team.countDocuments(),
+
       Player.countDocuments(),
+
       Event.countDocuments({
-        date: { $gte: now }
+        date: {
+          $gte: now
+        }
       }),
+
       Announcement.countDocuments(),
 
       Event.find({
-        date: { $gte: now }
+        date: {
+          $gte: now
+        }
       })
-        .populate("team", "teamName ageGroup")
-        .sort({ date: 1 })
+        .populate(
+          "team",
+          "teamName ageGroup"
+        )
+        .sort({
+          date: 1
+        })
         .limit(5),
 
       Announcement.find()
-        .populate("author", "firstName lastName")
-        .sort({ createdAt: -1 })
+        .populate(
+          "author",
+          "firstName lastName"
+        )
+        .sort({
+          createdAt: -1
+        })
         .limit(5)
     ]);
 
     res.render("dashboard/index", {
       user: req.session.user,
-      teamCount,
-      playerCount,
-      eventCount,
-      announcementCount,
+      teamCount: totalTeams,
+      playerCount: totalPlayers,
+      eventCount: totalUpcomingEvents,
+      announcementCount: totalAnnouncements,
       upcomingEvents,
       recentAnnouncements
     });
   } catch (err) {
-    console.error("Dashboard loading error:", err);
+    console.error(
+      "Dashboard loading error:",
+      err
+    );
 
     res.status(500).send(
       "Unable to load the dashboard."
