@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Add Team | Power Sports Hub</title>
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container">
+    <a class="navbar-brand" href="/">Power Sports Hub</a>
+
+    <div class="navbar-nav ms-auto">
+      <a class="nav-link" href="/dashboard">Dashboard</a>
+      <a class="nav-link" href="/teams">Teams</a>
+      <a class="nav-link" href="/logout">Logout</a>
+    </div>
+  </div>
+</nav>
+
+<main class="container py-5">
+
+  <div class="mx-auto" style="max-width: 650px;">
+
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+
+        <h1 class="h2 mb-3">Add a Team</h1>
+
+        <p class="text-muted">
+          Enter the team information below.
+        </p>
+
+        <% if (error) { %>
+          <div class="alert alert-danger">
+            <%= error %>
+          </div>
+        <% } %>
+
+        <form action="/teams" method="POST">
+
+          <div class="mb-3">
+            <label for="teamName" class="form-label">
+              Team Name
+            </label>
+
+            <input
+              type="text"
+              class="form-control"
+              id="teamName"
+              name="teamName"
+              maxlength="80"
+              required
+            >
+          </div>
+
+          <div class="mb-3">
+            <label for="ageGroup" class="form-label">
+              Age Group
+            </label>
+
+            <select
+              class="form-select"
+              id="ageGroup"
+              name="ageGroup"
+              required
+            >
+              <option value="">Select an age group</option>
+              <option value="6U">6U</option>
+              <option value="8U">8U</option>
+              <option value="10U">10U</option>
+              <option value="12U">12U</option>
+              <option value="14U">14U</option>
+              <option value="16U">16U</option>
+              <option value="18U">18U</option>
+            </select>
+          </div>
+
+          <div class="mb-4">
+            <label for="season" class="form-label">
+              Season
+            </label>
+
+            <input
+              type="text"
+              class="form-control"
+              id="season"
+              name="season"
+              placeholder="Example: Fall 2026"
+              maxlength="40"
+              required
+            >
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+              Create Team
+            </button>
+
+            <a href="/teams" class="btn btn-outline-secondary">
+              Cancel
+            </a>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+</body>
+</html>
