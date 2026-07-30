@@ -7,6 +7,7 @@ const mongoose = require("mongoose");
 const session = require("express-session");
 const methodOverride = require("method-override");
 const path = require("path");
+const authRoutes = require("./routes/auth");
 
 // 3. IMPORT LOCAL FILES
 const connectDB = require("./config/database");
@@ -34,6 +35,8 @@ app.use(
     saveUninitialized: false,
   })
 );
+
+app.use("/", authRoutes);
 
 // 7. VIEW ENGINE
 app.set("view engine", "ejs");
