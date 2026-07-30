@@ -1,25 +1,30 @@
-require('@dotenvx/dotenvx').config(); // or require('dotenv').config();
+// 1. LOAD ENVIRONMENT VARIABLES FIRST
+require("dotenv").config();
 
-const express = require('express');
-const mongoose = require('mongoose');
+// 2. IMPORT PACKAGES
+const express = require("express");
+const mongoose = require("mongoose");
 const session = require("express-session");
 const methodOverride = require("method-override");
 const path = require("path");
-const connectDB = require("./config/database");
-require("dotenv").config();
-connectDB();
 
+// 3. IMPORT LOCAL FILES
+const connectDB = require("./config/database");
+
+// 4. INITIALIZE APP
 const app = express();
 
+// 5. CONNECT TO DATABASE
+// Note: You had two different database connection methods competing here. 
+// We are using the explicit one that utilizes process.env.MONGO_URI.
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('Database connected successfully'))
   .catch((err) => console.error('Database Connection Error:', err));
 
-// Middleware
+// 6. MIDDLEWARE
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(methodOverride("_method"));
-
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use(
@@ -30,17 +35,16 @@ app.use(
   })
 );
 
-// View Engine
+// 7. VIEW ENGINE
 app.set("view engine", "ejs");
 
-// Home Route
+// 8. ROUTES
 app.get("/", (req, res) => {
   res.render("index");
 });
 
-// Start Server
+// 9. START SERVER
 const PORT = process.env.PORT || 3000;
-
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
