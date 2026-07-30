@@ -1,7 +1,9 @@
 const express = require("express");
+const mongoose = require("mongoose");
+
 const Team = require("../models/Team");
-const auth = require("../middleware/auth");
 const Player = require("../models/Player");
+const auth = require("../middleware/auth");
 
 const router = express.Router();
 
