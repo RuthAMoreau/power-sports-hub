@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Schedule | Power Sports Hub</title>
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container">
+
+    <a class="navbar-brand" href="/">
+      Power Sports Hub
+    </a>
+
+    <div class="navbar-nav ms-auto">
+      <a class="nav-link" href="/dashboard">Dashboard</a>
+      <a class="nav-link" href="/teams">Teams</a>
+      <a class="nav-link" href="/players">Players</a>
+      <a class="nav-link active" href="/events">Schedule</a>
+      <a class="nav-link" href="/logout">Logout</a>
+    </div>
+
+  </div>
+</nav>
+
+<main class="container py-5">
+
+  <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-4">
+    <div>
+      <h1 class="mb-1">Schedule</h1>
+
+      <p class="text-muted mb-0">
+        View games, practices, tournaments, and team events.
+      </p>
+    </div>
+
+    <a href="/events/new" class="btn btn-primary">
+      Add Event
+    </a>
+  </div>
+
+  <% if (!events || events.length === 0) { %>
+
+    <div class="alert alert-info">
+      No events have been scheduled yet.
+
+      <a href="/events/new" class="alert-link">
+        Add the first event.
+      </a>
+    </div>
+
+  <% } else { %>
+
+    <div class="row g-4">
+
+      <% events.forEach(event => { %>
+
+        <div class="col-12 col-md-6 col-lg-4">
+          <div class="card h-100 shadow-sm">
+
+            <div class="card-body">
+
+              <div class="d-flex justify-content-between align-items-start gap-2">
+                <h2 class="h4 card-title">
+                  <%= event.title %>
+                </h2>
+
+                <span class="badge text-bg-primary">
+                  <%= event.eventType %>
+                </span>
+              </div>
+
+              <p class="mb-2">
+                <strong>Team:</strong>
+
+                <% if (event.team) { %>
+                  <%= event.team.teamName %>
+                  (<%= event.team.ageGroup %>)
+                <% } else { %>
+                  Team unavailable
+                <% } %>
+              </p>
+
+              <p class="mb-2">
+                <strong>Date:</strong>
+                <%= event.date.toLocaleDateString() %>
+              </p>
+
+              <p class="mb-2">
+                <strong>Time:</strong>
+                <%= event.date.toLocaleTimeString([], {
+                  hour: "numeric",
+                  minute: "2-digit"
+                }) %>
+              </p>
+
+              <p class="mb-2">
+                <strong>Location:</strong>
+                <%= event.location || "Not provided" %>
+              </p>
+
+              <% if (event.opponent) { %>
+                <p class="mb-2">
+                  <strong>Opponent:</strong>
+                  <%= event.opponent %>
+                </p>
+              <% } %>
+
+              <% if (event.notes) { %>
+                <p class="mb-0">
+                  <strong>Notes:</strong>
+                  <%= event.notes %>
+                </p>
+              <% } %>
+
+            </div>
+
+          </div>
+        </div>
+
+      <% }) %>
+
+    </div>
+
+  <% } %>
+
+</main>
+
+</body>
+</html>
