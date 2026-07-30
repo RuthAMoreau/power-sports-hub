@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Server Error | Power Sports Hub</title>
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container">
+
+    <a class="navbar-brand" href="/">
+      Power Sports Hub
+    </a>
+
+  </div>
+</nav>
+
+<main class="container py-5">
+
+  <div
+    class="card shadow-sm mx-auto text-center"
+    style="max-width: 650px;"
+  >
+    <div class="card-body p-5">
+
+      <p class="display-1 fw-bold text-danger mb-2">
+        500
+      </p>
+
+      <h1 class="h2 mb-3">
+        Something Went Wrong
+      </h1>
+
+      <p class="text-muted mb-4">
+        Power Sports Hub was unable to complete your request.
+        Please try again.
+      </p>
+
+      <% if (errorMessage) { %>
+
+        <div class="alert alert-danger text-start">
+          <strong>Error:</strong>
+          <%= errorMessage %>
+        </div>
+
+      <% } %>
+
+      <div class="d-flex flex-wrap justify-content-center gap-2">
+
+        <a
+          href="/dashboard"
+          class="btn btn-primary"
+        >
+          Return to Dashboard
+        </a>
+
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          onclick="window.history.back()"
+        >
+          Go Back
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<script
+  src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+></script>
+
+</body>
+</html>
