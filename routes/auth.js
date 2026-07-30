@@ -3,8 +3,6 @@ const bcrypt = require("bcrypt");
 const User = require("../models/User");
 
 const router = express.Router();
-const bcrypt = require("bcrypt");
-const User = require("../models/User");
 
 // Register Page
 router.get("/register", (req, res) => {
@@ -110,8 +108,11 @@ router.post("/register", async (req, res) => {
         res.send("Server Error");
     }
 
-    router.get("/login", (req, res) => {
-    res.render("auth/login");
+router.get("/logout", (req, res) => {
+    req.session.destroy(() => {
+        res.redirect("/");
+    });
+});
 });
 });
 
