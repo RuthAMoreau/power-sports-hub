@@ -7,12 +7,20 @@ const auth = require("../middleware/auth");
 
 const router = express.Router();
 
-// Display all players with search
+// Display all players with search and pagination
 router.get("/", auth, async (req, res) => {
   try {
     const search = req.query.search
       ? req.query.search.trim()
       : "";
+
+    const page = Math.max(
+      parseInt(req.query.page, 10) || 1,
+      1
+    );
+
+    const limit = 10;
+    const skip = (page - 1) * limit;
 
     const query = {};
 
@@ -33,16 +41,31 @@ router.get("/", auth, async (req, res) => {
       ];
     }
 
+    const totalPlayers = await Player.countDocuments(query);
+
+    const totalPages = Math.max(
+      Math.ceil(totalPlayers / limit),
+      1
+    );
+
+    const currentPage = Math.min(page, totalPages);
+    const currentSkip = (currentPage - 1) * limit;
+
     const players = await Player.find(query)
       .populate("team", "teamName ageGroup")
       .sort({
         lastName: 1,
         firstName: 1
-      });
+      })
+      .skip(currentSkip)
+      .limit(limit);
 
     res.render("players/index", {
       players,
       search,
+      page: currentPage,
+      totalPages,
+      totalPlayers,
       user: req.session.user
     });
   } catch (err) {
