@@ -117,7 +117,8 @@
         </h2>
 
         <span class="badge bg-primary">
-          <%= players.length %> Player<%= players.length !== 1 ? "s" : "" %>
+          <%= players.length %>
+          Player<%= players.length !== 1 ? "s" : "" %>
         </span>
 
       </div>
@@ -135,15 +136,14 @@
           <table class="table table-striped align-middle">
 
             <thead>
-
               <tr>
                 <th>#</th>
                 <th>Player</th>
                 <th>Position</th>
                 <th>Parent / Guardian</th>
                 <th>Email</th>
+                <th>Actions</th>
               </tr>
-
             </thead>
 
             <tbody>
@@ -153,7 +153,7 @@
                 <tr>
 
                   <td>
-                    <%= player.jerseyNumber || "—" %>
+                    <%= player.jerseyNumber ?? "—" %>
                   </td>
 
                   <td>
@@ -173,6 +173,32 @@
 
                   <td>
                     <%= player.parentEmail || "—" %>
+                  </td>
+
+                  <td>
+                    <div class="d-flex flex-wrap gap-2">
+
+                      <a
+                        href="/players/<%= player._id %>/edit"
+                        class="btn btn-sm btn-outline-primary"
+                      >
+                        Edit
+                      </a>
+
+                      <form
+                        action="/players/<%= player._id %>?_method=DELETE"
+                        method="POST"
+                        onsubmit="return confirm('Remove this player from the roster?');"
+                      >
+                        <button
+                          type="submit"
+                          class="btn btn-sm btn-outline-danger"
+                        >
+                          Delete
+                        </button>
+                      </form>
+
+                    </div>
                   </td>
 
                 </tr>
