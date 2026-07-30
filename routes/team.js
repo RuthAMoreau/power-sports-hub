@@ -5,6 +5,7 @@ const Team = require("../models/Team");
 const Player = require("../models/Player");
 const Event = require("../models/Event");
 const auth = require("../middleware/auth");
+const requireRole = require("../middleware/role");
 
 const router = express.Router();
 
@@ -68,119 +69,143 @@ router.get("/", auth, async (req, res) => {
 });
 
 // Show create-team form
-router.get("/new", auth, (req, res) => {
-  res.render("teams/new", {
-    error: null,
-    formData: {}
-  });
-});
+router.get(
+  "/new",
+  auth,
+  requireRole("admin", "coach"),
+  (req, res) => {
+    res.render("teams/new", {
+      error: null,
+      formData: {}
+    });
+  }
+);
 
 // Show edit-team form
-router.get("/:id/edit", auth, async (req, res) => {
-  try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res
-        .status(400)
-        .send(
-          `Invalid team ID received: ${req.params.id}`
-        );
+router.get(
+  "/:id/edit",
+  auth,
+  requireRole("admin", "coach"),
+  async (req, res) => {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        return res
+          .status(400)
+          .send(
+            `Invalid team ID received: ${req.params.id}`
+          );
+      }
+
+      const team = await Team.findById(req.params.id);
+
+      if (!team) {
+        return res.status(404).send("Team not found.");
+      }
+
+      res.render("teams/edit", {
+        team,
+        error: null
+      });
+    } catch (err) {
+      console.error("Team edit form error:", err);
+
+      res.status(500).send(
+        "Unable to load the edit form."
+      );
     }
-
-    const team = await Team.findById(req.params.id);
-
-    if (!team) {
-      return res.status(404).send("Team not found.");
-    }
-
-    res.render("teams/edit", {
-      team,
-      error: null
-    });
-  } catch (err) {
-    console.error("Team edit form error:", err);
-
-    res.status(500).send(
-      "Unable to load the edit form."
-    );
   }
-});
+);
 
 // Update team
-router.put("/:id", auth, async (req, res) => {
-  const { teamName, ageGroup, season } = req.body;
+router.put(
+  "/:id",
+  auth,
+  requireRole("admin", "coach"),
+  async (req, res) => {
+    const {
+      teamName,
+      ageGroup,
+      season
+    } = req.body;
 
-  try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).send("Invalid team ID.");
+    try {
+      if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        return res.status(400).send("Invalid team ID.");
+      }
+
+      const team = await Team.findById(req.params.id);
+
+      if (!team) {
+        return res.status(404).send("Team not found.");
+      }
+
+      if (!teamName || !ageGroup || !season) {
+        return res.status(400).render("teams/edit", {
+          team: {
+            ...team.toObject(),
+            teamName,
+            ageGroup,
+            season
+          },
+          error:
+            "Team name, age group, and season are required."
+        });
+      }
+
+      team.teamName = teamName.trim();
+      team.ageGroup = ageGroup.trim();
+      team.season = season.trim();
+
+      await team.save();
+
+      res.redirect(`/teams/${team._id}`);
+    } catch (err) {
+      console.error("Team update error:", err);
+
+      res.status(500).send(
+        "Unable to update the team."
+      );
     }
-
-    const team = await Team.findById(req.params.id);
-
-    if (!team) {
-      return res.status(404).send("Team not found.");
-    }
-
-    if (!teamName || !ageGroup || !season) {
-      return res.status(400).render("teams/edit", {
-        team: {
-          ...team.toObject(),
-          teamName,
-          ageGroup,
-          season
-        },
-        error:
-          "Team name, age group, and season are required."
-      });
-    }
-
-    team.teamName = teamName.trim();
-    team.ageGroup = ageGroup.trim();
-    team.season = season.trim();
-
-    await team.save();
-
-    res.redirect(`/teams/${team._id}`);
-  } catch (err) {
-    console.error("Team update error:", err);
-
-    res.status(500).send(
-      "Unable to update the team."
-    );
   }
-});
+);
 
 // Delete team and its related players and events
-router.delete("/:id", auth, async (req, res) => {
-  try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).send("Invalid team ID.");
+router.delete(
+  "/:id",
+  auth,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        return res.status(400).send("Invalid team ID.");
+      }
+
+      const team = await Team.findById(req.params.id);
+
+      if (!team) {
+        return res.status(404).send("Team not found.");
+      }
+
+      await Player.deleteMany({
+        team: team._id
+      });
+
+      await Event.deleteMany({
+        team: team._id
+      });
+
+      await Team.findByIdAndDelete(team._id);
+
+      res.redirect("/teams");
+    } catch (err) {
+      console.error("Team deletion error:", err);
+
+      res.status(500).send(
+        "Unable to delete the team."
+      );
     }
-
-    const team = await Team.findById(req.params.id);
-
-    if (!team) {
-      return res.status(404).send("Team not found.");
-    }
-
-    await Player.deleteMany({
-      team: team._id
-    });
-
-    await Event.deleteMany({
-      team: team._id
-    });
-
-    await Team.findByIdAndDelete(team._id);
-
-    res.redirect("/teams");
-  } catch (err) {
-    console.error("Team deletion error:", err);
-
-    res.status(500).send(
-      "Unable to delete the team."
-    );
   }
-});
+);
 
 // Display one team and its roster
 router.get("/:id", auth, async (req, res) => {
@@ -222,33 +247,42 @@ router.get("/:id", auth, async (req, res) => {
 });
 
 // Create team
-router.post("/", auth, async (req, res) => {
-  const { teamName, ageGroup, season } = req.body;
+router.post(
+  "/",
+  auth,
+  requireRole("admin", "coach"),
+  async (req, res) => {
+    const {
+      teamName,
+      ageGroup,
+      season
+    } = req.body;
 
-  if (!teamName || !ageGroup || !season) {
-    return res.status(400).render("teams/new", {
-      error: "Please complete every field.",
-      formData: req.body
-    });
+    if (!teamName || !ageGroup || !season) {
+      return res.status(400).render("teams/new", {
+        error: "Please complete every field.",
+        formData: req.body
+      });
+    }
+
+    try {
+      await Team.create({
+        teamName: teamName.trim(),
+        ageGroup: ageGroup.trim(),
+        season: season.trim(),
+        coach: req.session.user.id
+      });
+
+      res.redirect("/teams");
+    } catch (err) {
+      console.error("Team creation error:", err);
+
+      res.status(500).render("teams/new", {
+        error: "Unable to create the team.",
+        formData: req.body
+      });
+    }
   }
-
-  try {
-    await Team.create({
-      teamName: teamName.trim(),
-      ageGroup: ageGroup.trim(),
-      season: season.trim(),
-      coach: req.session.user.id
-    });
-
-    res.redirect("/teams");
-  } catch (err) {
-    console.error("Team creation error:", err);
-
-    res.status(500).render("teams/new", {
-      error: "Unable to create the team.",
-      formData: req.body
-    });
-  }
-});
+);
 
 module.exports = router;
