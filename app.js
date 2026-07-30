@@ -1,3 +1,7 @@
+require('@dotenvx/dotenvx').config(); // or require('dotenv').config();
+
+const express = require('express');
+const mongoose = require('mongoose');
 const express = require("express");
 const session = require("express-session");
 const methodOverride = require("method-override");
@@ -7,8 +11,6 @@ require("dotenv").config();
 connectDB();
 
 const app = express();
-
-const mongoose = require('mongoose');
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('Database connected successfully'))
