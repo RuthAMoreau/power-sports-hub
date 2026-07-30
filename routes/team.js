@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const Team = require("../models/Team");
 const Player = require("../models/Player");
 const auth = require("../middleware/auth");
+const Event = require("../models/Event");
 
 const router = express.Router();
 
@@ -33,6 +34,97 @@ router.get("/new", auth, (req, res) => {
     error: null,
     formData: {}
   });
+});
+
+router.get("/:id/edit", auth, async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).send("Invalid team ID.");
+    }
+
+    const team = await Team.findById(req.params.id);
+
+    if (!team) {
+      return res.status(404).send("Team not found.");
+    }
+
+    res.render("teams/edit", {
+      team,
+      error: null
+    });
+  } catch (err) {
+    console.error("Team edit form error:", err);
+    res.status(500).send("Unable to load the edit form.");
+  }
+});
+
+router.put("/:id", auth, async (req, res) => {
+  const { teamName, ageGroup, season } = req.body;
+
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).send("Invalid team ID.");
+    }
+
+    const team = await Team.findById(req.params.id);
+
+    if (!team) {
+      return res.status(404).send("Team not found.");
+    }
+
+    if (!teamName || !ageGroup || !season) {
+      return res.status(400).render("teams/edit", {
+        team: {
+          ...team.toObject(),
+          teamName,
+          ageGroup,
+          season
+        },
+        error: "Team name, age group, and season are required."
+      });
+    }
+
+    team.teamName = teamName.trim();
+    team.ageGroup = ageGroup.trim();
+    team.season = season.trim();
+
+    await team.save();
+
+    res.redirect(`/teams/${team._id}`);
+  } catch (err) {
+    console.error("Team update error:", err);
+
+    res.status(500).send("Unable to update the team.");
+  }
+});
+
+router.delete("/:id", auth, async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).send("Invalid team ID.");
+    }
+
+    const team = await Team.findById(req.params.id);
+
+    if (!team) {
+      return res.status(404).send("Team not found.");
+    }
+
+    await Player.deleteMany({
+      team: team._id
+    });
+
+    await Event.deleteMany({
+      team: team._id
+    });
+
+    await Team.findByIdAndDelete(team._id);
+
+    res.redirect("/teams");
+  } catch (err) {
+    console.error("Team deletion error:", err);
+    res.status(500).send("Unable to delete the team.");
+  }
 });
 
 // Display one team and its roster
