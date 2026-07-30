@@ -4,10 +4,12 @@ const auth = require("../middleware/auth");
 
 const router = express.Router();
 
-// Display all teams
+// Show all teams
 router.get("/", auth, async (req, res) => {
   try {
-    const teams = await Team.find().populate("coach", "firstName lastName");
+    const teams = await Team.find()
+      .populate("coach", "firstName lastName")
+      .sort({ createdAt: -1 });
 
     res.render("teams/index", {
       teams,
@@ -15,24 +17,29 @@ router.get("/", auth, async (req, res) => {
     });
   } catch (err) {
     console.error("Team listing error:", err);
-    res.status(500).send("Unable to load teams.");
+
+    res.status(500).send(
+      `Unable to load teams: ${err.message}`
+    );
   }
 });
 
-// Display team creation form
+// Show create-team form
 router.get("/new", auth, (req, res) => {
   res.render("teams/new", {
-    error: null
+    error: null,
+    formData: {}
   });
 });
 
-// Create a team
+// Create team
 router.post("/", auth, async (req, res) => {
   const { teamName, ageGroup, season } = req.body;
 
   if (!teamName || !ageGroup || !season) {
-    return res.render("teams/new", {
-      error: "Please complete every field."
+    return res.status(400).render("teams/new", {
+      error: "Please complete every field.",
+      formData: req.body
     });
   }
 
@@ -49,7 +56,8 @@ router.post("/", auth, async (req, res) => {
     console.error("Team creation error:", err);
 
     res.status(500).render("teams/new", {
-      error: "Unable to create the team."
+      error: "Unable to create the team.",
+      formData: req.body
     });
   }
 });
