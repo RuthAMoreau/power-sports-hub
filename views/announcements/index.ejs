@@ -139,7 +139,7 @@
 
   </div>
 
-  <!-- Audience Filter -->
+  <!-- Audience Filter and Sorting -->
 
   <form
     action="/announcements"
@@ -198,13 +198,60 @@
 
     </div>
 
+    <div class="col-12 col-md-4">
+
+      <label
+        for="sort"
+        class="visually-hidden"
+      >
+        Sort announcements
+      </label>
+
+      <select
+        id="sort"
+        name="sort"
+        class="form-select"
+      >
+
+        <option
+          value="newest"
+          <%= sort === "newest" ? "selected" : "" %>
+        >
+          Newest First
+        </option>
+
+        <option
+          value="oldest"
+          <%= sort === "oldest" ? "selected" : "" %>
+        >
+          Oldest First
+        </option>
+
+        <option
+          value="title-asc"
+          <%= sort === "title-asc" ? "selected" : "" %>
+        >
+          Title A–Z
+        </option>
+
+        <option
+          value="title-desc"
+          <%= sort === "title-desc" ? "selected" : "" %>
+        >
+          Title Z–A
+        </option>
+
+      </select>
+
+    </div>
+
     <div class="col-auto">
 
       <button
         type="submit"
         class="btn btn-primary"
       >
-        Filter
+        Apply
       </button>
 
     </div>
@@ -400,7 +447,8 @@
 
             <a
               class="page-link"
-              href="/announcements?page=<%= page - 1 %>&audience=<%= encodeURIComponent(audience || '') %>"
+              href="/announcements?page=<%= page - 1 %>&audience=<%= encodeURIComponent(audience || '') %>&sort=<%= encodeURIComponent(sort || 'newest') %>"
+              aria-label="Previous page"
             >
               Previous
             </a>
@@ -419,7 +467,7 @@
 
               <a
                 class="page-link"
-                href="/announcements?page=<%= pageNumber %>&audience=<%= encodeURIComponent(audience || '') %>"
+                href="/announcements?page=<%= pageNumber %>&audience=<%= encodeURIComponent(audience || '') %>&sort=<%= encodeURIComponent(sort || 'newest') %>"
                 <%= pageNumber === page
                   ? 'aria-current="page"'
                   : ''
@@ -438,7 +486,8 @@
 
             <a
               class="page-link"
-              href="/announcements?page=<%= page + 1 %>&audience=<%= encodeURIComponent(audience || '') %>"
+              href="/announcements?page=<%= page + 1 %>&audience=<%= encodeURIComponent(audience || '') %>&sort=<%= encodeURIComponent(sort || 'newest') %>"
+              aria-label="Next page"
             >
               Next
             </a>
