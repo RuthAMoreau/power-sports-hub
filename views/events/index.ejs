@@ -45,6 +45,7 @@
     >
 
       <div class="navbar-nav ms-auto">
+
         <a class="nav-link" href="/dashboard">
           Dashboard
         </a>
@@ -68,6 +69,7 @@
         <a class="nav-link" href="/logout">
           Logout
         </a>
+
       </div>
 
     </div>
@@ -82,6 +84,7 @@
   >
 
     <div>
+
       <h1 class="mb-1">
         Schedule
       </h1>
@@ -89,6 +92,7 @@
       <p class="text-muted mb-0">
         View games, practices, tournaments, and team events.
       </p>
+
     </div>
 
     <a
@@ -218,13 +222,19 @@
 
     <% if (type) { %>
 
-      <p class="text-muted mb-3">
+      <p class="text-muted mb-2">
         Showing
         <strong><%= type %></strong>
         events.
       </p>
 
     <% } %>
+
+    <p class="text-muted mb-3">
+      <%= totalEvents %>
+      event<%= totalEvents === 1 ? "" : "s" %>
+      found.
+    </p>
 
     <div class="row g-4">
 
@@ -263,6 +273,7 @@
                   Team unavailable
 
                 <% } %>
+
               </p>
 
               <p class="mb-2">
@@ -339,6 +350,70 @@
       <% }) %>
 
     </div>
+
+    <% if (totalPages > 1) { %>
+
+      <nav
+        class="mt-4"
+        aria-label="Event page navigation"
+      >
+
+        <ul class="pagination justify-content-center">
+
+          <li
+            class="page-item <%= page === 1 ? 'disabled' : '' %>"
+          >
+
+            <a
+              class="page-link"
+              href="/events?page=<%= page - 1 %>&type=<%= encodeURIComponent(type || '') %>"
+              aria-label="Previous page"
+            >
+              Previous
+            </a>
+
+          </li>
+
+          <% for (
+            let pageNumber = 1;
+            pageNumber <= totalPages;
+            pageNumber++
+          ) { %>
+
+            <li
+              class="page-item <%= pageNumber === page ? 'active' : '' %>"
+            >
+
+              <a
+                class="page-link"
+                href="/events?page=<%= pageNumber %>&type=<%= encodeURIComponent(type || '') %>"
+              >
+                <%= pageNumber %>
+              </a>
+
+            </li>
+
+          <% } %>
+
+          <li
+            class="page-item <%= page === totalPages ? 'disabled' : '' %>"
+          >
+
+            <a
+              class="page-link"
+              href="/events?page=<%= page + 1 %>&type=<%= encodeURIComponent(type || '') %>"
+              aria-label="Next page"
+            >
+              Next
+            </a>
+
+          </li>
+
+        </ul>
+
+      </nav>
+
+    <% } %>
 
   <% } %>
 
