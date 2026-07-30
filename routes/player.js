@@ -7,10 +7,33 @@ const auth = require("../middleware/auth");
 
 const router = express.Router();
 
-// Display all players
+// Display all players with search
 router.get("/", auth, async (req, res) => {
   try {
-    const players = await Player.find()
+    const search = req.query.search
+      ? req.query.search.trim()
+      : "";
+
+    const query = {};
+
+    if (search) {
+      query.$or = [
+        {
+          firstName: {
+            $regex: search,
+            $options: "i"
+          }
+        },
+        {
+          lastName: {
+            $regex: search,
+            $options: "i"
+          }
+        }
+      ];
+    }
+
+    const players = await Player.find(query)
       .populate("team", "teamName ageGroup")
       .sort({
         lastName: 1,
@@ -19,6 +42,7 @@ router.get("/", auth, async (req, res) => {
 
     res.render("players/index", {
       players,
+      search,
       user: req.session.user
     });
   } catch (err) {
