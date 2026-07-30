@@ -119,6 +119,7 @@
     class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4"
   >
     <div>
+
       <h1 class="mb-1">
         Announcements
       </h1>
@@ -126,6 +127,7 @@
       <p class="text-muted mb-0">
         View updates for the sports organization.
       </p>
+
     </div>
 
     <a
@@ -134,7 +136,91 @@
     >
       Add Announcement
     </a>
+
   </div>
+
+  <!-- Audience Filter -->
+
+  <form
+    action="/announcements"
+    method="GET"
+    class="row g-2 mb-4"
+  >
+
+    <div class="col-12 col-md-4">
+
+      <label
+        for="audience"
+        class="visually-hidden"
+      >
+        Filter by audience
+      </label>
+
+      <select
+        id="audience"
+        name="audience"
+        class="form-select"
+      >
+
+        <option value="">
+          All Audiences
+        </option>
+
+        <option
+          value="Everyone"
+          <%= audience === "Everyone" ? "selected" : "" %>
+        >
+          Everyone
+        </option>
+
+        <option
+          value="Players"
+          <%= audience === "Players" ? "selected" : "" %>
+        >
+          Players
+        </option>
+
+        <option
+          value="Parents"
+          <%= audience === "Parents" ? "selected" : "" %>
+        >
+          Parents
+        </option>
+
+        <option
+          value="Coaches"
+          <%= audience === "Coaches" ? "selected" : "" %>
+        >
+          Coaches
+        </option>
+
+      </select>
+
+    </div>
+
+    <div class="col-auto">
+
+      <button
+        type="submit"
+        class="btn btn-primary"
+      >
+        Filter
+      </button>
+
+    </div>
+
+    <div class="col-auto">
+
+      <a
+        href="/announcements"
+        class="btn btn-outline-secondary"
+      >
+        Clear
+      </a>
+
+    </div>
+
+  </form>
 
   <% if (
     !announcements ||
@@ -142,17 +228,44 @@
   ) { %>
 
     <div class="alert alert-info">
-      No announcements have been posted yet.
 
-      <a
-        href="/announcements/new"
-        class="alert-link"
-      >
-        Create the first announcement.
-      </a>
+      <% if (audience) { %>
+
+        No announcements were found for
+        <strong><%= audience %></strong>.
+
+        <a
+          href="/announcements"
+          class="alert-link"
+        >
+          Clear the filter.
+        </a>
+
+      <% } else { %>
+
+        No announcements have been posted yet.
+
+        <a
+          href="/announcements/new"
+          class="alert-link"
+        >
+          Create the first announcement.
+        </a>
+
+      <% } %>
+
     </div>
 
   <% } else { %>
+
+    <% if (audience) { %>
+
+      <p class="text-muted mb-2">
+        Showing announcements for
+        <strong><%= audience %></strong>.
+      </p>
+
+    <% } %>
 
     <p class="text-muted mb-3">
       <%= totalAnnouncements %>
@@ -162,9 +275,7 @@
 
     <div class="row g-4">
 
-      <% announcements.forEach(
-        announcement => {
-      %>
+      <% announcements.forEach(announcement => { %>
 
         <div class="col-12 col-lg-6">
 
@@ -175,6 +286,7 @@
               <div
                 class="d-flex justify-content-between align-items-start gap-3 mb-2"
               >
+
                 <h2 class="h4 card-title mb-0">
                   <%= announcement.title %>
                 </h2>
@@ -182,6 +294,7 @@
                 <span class="badge text-bg-primary">
                   <%= announcement.audience %>
                 </span>
+
               </div>
 
               <p class="card-text">
@@ -191,6 +304,7 @@
               <hr>
 
               <p class="small text-muted mb-1">
+
                 <strong>Posted:</strong>
 
                 <% if (announcement.createdAt) { %>
@@ -204,9 +318,11 @@
                   Date unavailable
 
                 <% } %>
+
               </p>
 
               <p class="small text-muted mb-0">
+
                 <strong>Author:</strong>
 
                 <% if (announcement.author) { %>
@@ -216,19 +332,12 @@
                     announcement.author.lastName
                   ) { %>
 
-                    <%= announcement.author.firstName
-                      || ""
-                    %>
-
-                    <%= announcement.author.lastName
-                      || ""
-                    %>
+                    <%= announcement.author.firstName || "" %>
+                    <%= announcement.author.lastName || "" %>
 
                   <% } else { %>
 
-                    <%= announcement.author.name
-                      || "User"
-                    %>
+                    <%= announcement.author.name || "User" %>
 
                   <% } %>
 
@@ -237,6 +346,7 @@
                   Unknown
 
                 <% } %>
+
               </p>
 
               <div class="d-flex flex-wrap gap-2 mt-auto pt-3">
@@ -253,12 +363,14 @@
                   method="POST"
                   onsubmit="return confirm('Delete this announcement?');"
                 >
+
                   <button
                     type="submit"
                     class="btn btn-sm btn-outline-danger"
                   >
                     Delete
                   </button>
+
                 </form>
 
               </div>
@@ -285,13 +397,14 @@
           <li
             class="page-item <%= page === 1 ? 'disabled' : '' %>"
           >
+
             <a
               class="page-link"
-              href="/announcements?page=<%= page - 1 %>"
-              aria-label="Previous page"
+              href="/announcements?page=<%= page - 1 %>&audience=<%= encodeURIComponent(audience || '') %>"
             >
               Previous
             </a>
+
           </li>
 
           <% for (
@@ -303,9 +416,10 @@
             <li
               class="page-item <%= pageNumber === page ? 'active' : '' %>"
             >
+
               <a
                 class="page-link"
-                href="/announcements?page=<%= pageNumber %>"
+                href="/announcements?page=<%= pageNumber %>&audience=<%= encodeURIComponent(audience || '') %>"
                 <%= pageNumber === page
                   ? 'aria-current="page"'
                   : ''
@@ -313,6 +427,7 @@
               >
                 <%= pageNumber %>
               </a>
+
             </li>
 
           <% } %>
@@ -320,13 +435,14 @@
           <li
             class="page-item <%= page === totalPages ? 'disabled' : '' %>"
           >
+
             <a
               class="page-link"
-              href="/announcements?page=<%= page + 1 %>"
-              aria-label="Next page"
+              href="/announcements?page=<%= page + 1 %>&audience=<%= encodeURIComponent(audience || '') %>"
             >
               Next
             </a>
+
           </li>
 
         </ul>
