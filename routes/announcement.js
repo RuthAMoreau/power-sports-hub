@@ -6,9 +6,13 @@ const auth = require("../middleware/auth");
 
 const router = express.Router();
 
-// Display announcements with filtering, sorting, and pagination
+// Display announcements with search, filtering, sorting, and pagination
 router.get("/", auth, async (req, res) => {
   try {
+    const search = req.query.search
+      ? req.query.search.trim()
+      : "";
+
     const audience = req.query.audience
       ? req.query.audience.trim()
       : "";
@@ -39,6 +43,23 @@ router.get("/", auth, async (req, res) => {
 
     if (audience) {
       query.audience = audience;
+    }
+
+    if (search) {
+      query.$or = [
+        {
+          title: {
+            $regex: search,
+            $options: "i"
+          }
+        },
+        {
+          message: {
+            $regex: search,
+            $options: "i"
+          }
+        }
+      ];
     }
 
     let sortOption = {
@@ -83,6 +104,7 @@ router.get("/", auth, async (req, res) => {
 
     res.render("announcements/index", {
       announcements,
+      search,
       audience,
       sort,
       page: currentPage,
