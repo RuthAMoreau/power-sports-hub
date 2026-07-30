@@ -67,6 +67,9 @@ router.post("/register", async (req, res) => {
         res.send("Server Error");
     }
 
+    router.get("/login", (req, res) => {
+    res.render("auth/login");
+});
 });
 
 module.exports = router;
