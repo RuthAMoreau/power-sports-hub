@@ -92,6 +92,7 @@
           <a
             class="nav-link active"
             href="/announcements"
+            aria-current="page"
           >
             Announcements
           </a>
@@ -153,6 +154,12 @@
 
   <% } else { %>
 
+    <p class="text-muted mb-3">
+      <%= totalAnnouncements %>
+      announcement<%= totalAnnouncements === 1 ? "" : "s" %>
+      found.
+    </p>
+
     <div class="row g-4">
 
       <% announcements.forEach(
@@ -187,11 +194,15 @@
                 <strong>Posted:</strong>
 
                 <% if (announcement.createdAt) { %>
+
                   <%= new Date(
                     announcement.createdAt
                   ).toLocaleDateString() %>
+
                 <% } else { %>
+
                   Date unavailable
+
                 <% } %>
               </p>
 
@@ -222,7 +233,9 @@
                   <% } %>
 
                 <% } else { %>
+
                   Unknown
+
                 <% } %>
               </p>
 
@@ -259,6 +272,68 @@
       <% }) %>
 
     </div>
+
+    <% if (totalPages > 1) { %>
+
+      <nav
+        class="mt-4"
+        aria-label="Announcement page navigation"
+      >
+
+        <ul class="pagination justify-content-center">
+
+          <li
+            class="page-item <%= page === 1 ? 'disabled' : '' %>"
+          >
+            <a
+              class="page-link"
+              href="/announcements?page=<%= page - 1 %>"
+              aria-label="Previous page"
+            >
+              Previous
+            </a>
+          </li>
+
+          <% for (
+            let pageNumber = 1;
+            pageNumber <= totalPages;
+            pageNumber++
+          ) { %>
+
+            <li
+              class="page-item <%= pageNumber === page ? 'active' : '' %>"
+            >
+              <a
+                class="page-link"
+                href="/announcements?page=<%= pageNumber %>"
+                <%= pageNumber === page
+                  ? 'aria-current="page"'
+                  : ''
+                %>
+              >
+                <%= pageNumber %>
+              </a>
+            </li>
+
+          <% } %>
+
+          <li
+            class="page-item <%= page === totalPages ? 'disabled' : '' %>"
+          >
+            <a
+              class="page-link"
+              href="/announcements?page=<%= page + 1 %>"
+              aria-label="Next page"
+            >
+              Next
+            </a>
+          </li>
+
+        </ul>
+
+      </nav>
+
+    <% } %>
 
   <% } %>
 
