@@ -4,8 +4,9 @@
   "description": "A youth sports organization management system built with Node.js, Express, MongoDB, and Bootstrap.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  }
   "repository": {
     "type": "git",
     "url": "git+https://github.com/RuthAMoreau/power-sports-hub.git"
