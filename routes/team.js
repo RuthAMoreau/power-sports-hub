@@ -3,20 +3,37 @@ const mongoose = require("mongoose");
 
 const Team = require("../models/Team");
 const Player = require("../models/Player");
-const auth = require("../middleware/auth");
 const Event = require("../models/Event");
+const auth = require("../middleware/auth");
 
 const router = express.Router();
 
-// Show all teams
+// Show all teams with search
 router.get("/", auth, async (req, res) => {
   try {
-    const teams = await Team.find()
+    const search = req.query.search
+      ? req.query.search.trim()
+      : "";
+
+    const query = {};
+
+    if (search) {
+      query.teamName = {
+        $regex: search,
+        $options: "i"
+      };
+    }
+
+    const teams = await Team.find(query)
       .populate("coach", "firstName lastName")
-      .sort({ createdAt: -1 });
+      .sort({
+        ageGroup: 1,
+        teamName: 1
+      });
 
     res.render("teams/index", {
       teams,
+      search,
       user: req.session.user
     });
   } catch (err) {
@@ -36,10 +53,15 @@ router.get("/new", auth, (req, res) => {
   });
 });
 
+// Show edit-team form
 router.get("/:id/edit", auth, async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).send(`Invalid team ID received: ${req.params.id}`);
+      return res
+        .status(400)
+        .send(
+          `Invalid team ID received: ${req.params.id}`
+        );
     }
 
     const team = await Team.findById(req.params.id);
@@ -54,10 +76,14 @@ router.get("/:id/edit", auth, async (req, res) => {
     });
   } catch (err) {
     console.error("Team edit form error:", err);
-    res.status(500).send("Unable to load the edit form.");
+
+    res.status(500).send(
+      "Unable to load the edit form."
+    );
   }
 });
 
+// Update team
 router.put("/:id", auth, async (req, res) => {
   const { teamName, ageGroup, season } = req.body;
 
@@ -80,7 +106,8 @@ router.put("/:id", auth, async (req, res) => {
           ageGroup,
           season
         },
-        error: "Team name, age group, and season are required."
+        error:
+          "Team name, age group, and season are required."
       });
     }
 
@@ -94,10 +121,13 @@ router.put("/:id", auth, async (req, res) => {
   } catch (err) {
     console.error("Team update error:", err);
 
-    res.status(500).send("Unable to update the team.");
+    res.status(500).send(
+      "Unable to update the team."
+    );
   }
 });
 
+// Delete team and its related players and events
 router.delete("/:id", auth, async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
@@ -123,7 +153,10 @@ router.delete("/:id", auth, async (req, res) => {
     res.redirect("/teams");
   } catch (err) {
     console.error("Team deletion error:", err);
-    res.status(500).send("Unable to delete the team.");
+
+    res.status(500).send(
+      "Unable to delete the team."
+    );
   }
 });
 
@@ -134,7 +167,9 @@ router.get("/:id", auth, async (req, res) => {
       return res.status(400).send("Invalid team ID.");
     }
 
-    const team = await Team.findById(req.params.id).populate(
+    const team = await Team.findById(
+      req.params.id
+    ).populate(
       "coach",
       "firstName lastName"
     );
@@ -157,7 +192,10 @@ router.get("/:id", auth, async (req, res) => {
     });
   } catch (err) {
     console.error("Team detail error:", err);
-    res.status(500).send("Unable to load team details.");
+
+    res.status(500).send(
+      "Unable to load team details."
+    );
   }
 });
 
