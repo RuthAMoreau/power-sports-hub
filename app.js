@@ -16,6 +16,7 @@ const dashboardRoutes = require("./routes/dashboard");
 const teamRoutes = require("./routes/team");
 const playerRoutes = require("./routes/player");
 const eventRoutes = require("./routes/event");
+const announcementRoutes = require("./routes/announcement");
 
 // Initialize app
 const app = express();
@@ -51,6 +52,7 @@ app.use("/dashboard", dashboardRoutes);
 app.use("/teams", teamRoutes);
 app.use("/players", playerRoutes);
 app.use("/events", eventRoutes);
+app.use("/announcements", announcementRoutes);
 
 // Home page
 app.get("/", (req, res) => {
