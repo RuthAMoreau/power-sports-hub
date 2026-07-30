@@ -1,15 +1,16 @@
 const express = require("express");
+const mongoose = require("mongoose");
 
 const Announcement = require("../models/Announcement");
 const auth = require("../middleware/auth");
 
 const router = express.Router();
 
-// Show all announcements
+// Display all announcements
 router.get("/", auth, async (req, res) => {
   try {
     const announcements = await Announcement.find()
-      .populate("author", "firstName lastName name")
+      .populate("author", "firstName lastName")
       .sort({ createdAt: -1 });
 
     res.render("announcements/index", {
@@ -18,14 +19,11 @@ router.get("/", auth, async (req, res) => {
     });
   } catch (err) {
     console.error("Announcement listing error:", err);
-
-    res.status(500).send(
-      "Unable to load announcements."
-    );
+    res.status(500).send("Unable to load announcements.");
   }
 });
 
-// Show new-announcement form
+// Display new-announcement form
 router.get("/new", auth, (req, res) => {
   res.render("announcements/new", {
     error: null,
@@ -33,62 +31,118 @@ router.get("/new", auth, (req, res) => {
   });
 });
 
+// Display edit-announcement form
+router.get("/:id/edit", auth, async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).send("Invalid announcement ID.");
+    }
+
+    const announcement = await Announcement.findById(req.params.id);
+
+    if (!announcement) {
+      return res.status(404).send("Announcement not found.");
+    }
+
+    res.render("announcements/edit", {
+      announcement,
+      error: null
+    });
+  } catch (err) {
+    console.error("Announcement edit form error:", err);
+    res.status(500).send("Unable to load the announcement edit form.");
+  }
+});
+
+// Update announcement
+router.put("/:id", auth, async (req, res) => {
+  const { title, message, audience } = req.body;
+
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).send("Invalid announcement ID.");
+    }
+
+    const announcement = await Announcement.findById(req.params.id);
+
+    if (!announcement) {
+      return res.status(404).send("Announcement not found.");
+    }
+
+    if (!title || !message || !audience) {
+      return res.status(400).render("announcements/edit", {
+        announcement: {
+          ...announcement.toObject(),
+          title,
+          message,
+          audience
+        },
+        error: "Title, message, and audience are required."
+      });
+    }
+
+    announcement.title = title.trim();
+    announcement.message = message.trim();
+    announcement.audience = audience;
+
+    await announcement.save();
+
+    res.redirect("/announcements");
+  } catch (err) {
+    console.error("Announcement update error:", err);
+    res.status(500).send("Unable to update the announcement.");
+  }
+});
+
+// Delete announcement
+router.delete("/:id", auth, async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).send("Invalid announcement ID.");
+    }
+
+    const announcement = await Announcement.findById(req.params.id);
+
+    if (!announcement) {
+      return res.status(404).send("Announcement not found.");
+    }
+
+    await Announcement.findByIdAndDelete(announcement._id);
+
+    res.redirect("/announcements");
+  } catch (err) {
+    console.error("Announcement deletion error:", err);
+    res.status(500).send("Unable to delete the announcement.");
+  }
+});
+
 // Create announcement
 router.post("/", auth, async (req, res) => {
   const { title, message, audience } = req.body;
 
-  if (!title || !message) {
-    return res.status(400).render(
-      "announcements/new",
-      {
-        error: "Title and message are required.",
-        formData: req.body
-      }
-    );
-  }
-
-  const allowedAudiences = [
-    "Everyone",
-    "Coaches",
-    "Parents",
-    "Players"
-  ];
-
-  if (
-    audience &&
-    !allowedAudiences.includes(audience)
-  ) {
-    return res.status(400).render(
-      "announcements/new",
-      {
-        error: "Please select a valid audience.",
-        formData: req.body
-      }
-    );
-  }
-
   try {
+    if (!title || !message || !audience) {
+      return res.status(400).render("announcements/new", {
+        error: "Title, message, and audience are required.",
+        formData: req.body
+      });
+    }
+
     await Announcement.create({
       title: title.trim(),
       message: message.trim(),
-      audience: audience || "Everyone",
+      audience,
       author: req.session.user.id
     });
 
     res.redirect("/announcements");
   } catch (err) {
-    console.error(
-      "Announcement creation error:",
-      err
-    );
+    console.error("Announcement creation error:", err);
 
-    res.status(500).render(
-      "announcements/new",
-      {
-        error: "Unable to create the announcement.",
-        formData: req.body
-      }
-    );
+    res.status(500).render("announcements/new", {
+      error: "Unable to create the announcement.",
+      formData: req.body
+    });
   }
 });
 
