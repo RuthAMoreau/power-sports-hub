@@ -6,9 +6,13 @@ const auth = require("../middleware/auth");
 
 const router = express.Router();
 
-// Display all announcements with pagination
+// Display announcements with audience filtering and pagination
 router.get("/", auth, async (req, res) => {
   try {
+    const audience = req.query.audience
+      ? req.query.audience.trim()
+      : "";
+
     const page = Math.max(
       parseInt(req.query.page, 10) || 1,
       1
@@ -16,8 +20,14 @@ router.get("/", auth, async (req, res) => {
 
     const limit = 10;
 
+    const query = {};
+
+    if (audience) {
+      query.audience = audience;
+    }
+
     const totalAnnouncements =
-      await Announcement.countDocuments();
+      await Announcement.countDocuments(query);
 
     const totalPages = Math.max(
       Math.ceil(totalAnnouncements / limit),
@@ -32,7 +42,7 @@ router.get("/", auth, async (req, res) => {
     const skip =
       (currentPage - 1) * limit;
 
-    const announcements = await Announcement.find()
+    const announcements = await Announcement.find(query)
       .populate("author", "firstName lastName")
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -40,13 +50,17 @@ router.get("/", auth, async (req, res) => {
 
     res.render("announcements/index", {
       announcements,
+      audience,
       page: currentPage,
       totalPages,
       totalAnnouncements,
       user: req.session.user
     });
   } catch (err) {
-    console.error("Announcement listing error:", err);
+    console.error(
+      "Announcement listing error:",
+      err
+    );
 
     res.status(500).send(
       "Unable to load announcements."
