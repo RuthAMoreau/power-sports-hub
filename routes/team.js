@@ -1,288 +1,375 @@
-const express = require("express");
-const mongoose = require("mongoose");
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
 
-const Team = require("../models/Team");
-const Player = require("../models/Player");
-const Event = require("../models/Event");
-const auth = require("../middleware/auth");
-const requireRole = require("../middleware/role");
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
-const router = express.Router();
+  <title><%= team.teamName %> | Power Sports Hub</title>
 
-// Show all teams with search and pagination
-router.get("/", auth, async (req, res) => {
-  try {
-    const search = req.query.search
-      ? req.query.search.trim()
-      : "";
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
 
-    const page = Math.max(
-      parseInt(req.query.page, 10) || 1,
-      1
-    );
+  <link rel="stylesheet" href="/css/style.css">
+</head>
 
-    const limit = 10;
+<body>
 
-    const query = {};
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container">
 
-    if (search) {
-      query.teamName = {
-        $regex: search,
-        $options: "i"
-      };
-    }
+    <a class="navbar-brand" href="/">
+      Power Sports Hub
+    </a>
 
-    const totalTeams = await Team.countDocuments(query);
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarNav"
+      aria-controls="navbarNav"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
-    const totalPages = Math.max(
-      Math.ceil(totalTeams / limit),
-      1
-    );
+    <div
+      class="collapse navbar-collapse"
+      id="navbarNav"
+    >
 
-    const currentPage = Math.min(page, totalPages);
-    const skip = (currentPage - 1) * limit;
+      <div class="navbar-nav ms-auto">
 
-    const teams = await Team.find(query)
-      .populate("coach", "firstName lastName")
-      .sort({
-        ageGroup: 1,
-        teamName: 1
-      })
-      .skip(skip)
-      .limit(limit);
+        <a class="nav-link" href="/dashboard">
+          Dashboard
+        </a>
 
-    res.render("teams/index", {
-      teams,
-      search,
-      page: currentPage,
-      totalPages,
-      totalTeams,
-      user: req.session.user
-    });
-  } catch (err) {
-    console.error("Team listing error:", err);
+        <a
+          class="nav-link active"
+          href="/teams"
+          aria-current="page"
+        >
+          Teams
+        </a>
 
-    res.status(500).send(
-      `Unable to load teams: ${err.message}`
-    );
-  }
-});
+        <a class="nav-link" href="/players">
+          Players
+        </a>
 
-// Show create-team form
-router.get(
-  "/new",
-  auth,
-  requireRole("admin", "coach"),
-  (req, res) => {
-    res.render("teams/new", {
-      error: null,
-      formData: {}
-    });
-  }
-);
+        <a class="nav-link" href="/events">
+          Schedule
+        </a>
 
-// Show edit-team form
-router.get(
-  "/:id/edit",
-  auth,
-  requireRole("admin", "coach"),
-  async (req, res) => {
-    try {
-      if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-        return res
-          .status(400)
-          .send(
-            `Invalid team ID received: ${req.params.id}`
-          );
-      }
+        <a class="nav-link" href="/announcements">
+          Announcements
+        </a>
 
-      const team = await Team.findById(req.params.id);
+        <a class="nav-link" href="/logout">
+          Logout
+        </a>
 
-      if (!team) {
-        return res.status(404).send("Team not found.");
-      }
+      </div>
 
-      res.render("teams/edit", {
-        team,
-        error: null
-      });
-    } catch (err) {
-      console.error("Team edit form error:", err);
+    </div>
 
-      res.status(500).send(
-        "Unable to load the edit form."
-      );
-    }
-  }
-);
+  </div>
+</nav>
 
-// Update team
-router.put(
-  "/:id",
-  auth,
-  requireRole("admin", "coach"),
-  async (req, res) => {
-    const {
-      teamName,
-      ageGroup,
-      season
-    } = req.body;
+<main class="container py-5">
 
-    try {
-      if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-        return res.status(400).send("Invalid team ID.");
-      }
+  <div
+    class="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-3 mb-4"
+  >
 
-      const team = await Team.findById(req.params.id);
+    <div>
 
-      if (!team) {
-        return res.status(404).send("Team not found.");
-      }
+      <h1 class="mb-2">
+        <%= team.teamName %>
+      </h1>
 
-      if (!teamName || !ageGroup || !season) {
-        return res.status(400).render("teams/edit", {
-          team: {
-            ...team.toObject(),
-            teamName,
-            ageGroup,
-            season
-          },
-          error:
-            "Team name, age group, and season are required."
-        });
-      }
+      <p class="text-muted mb-1">
+        <strong>Age Group:</strong>
+        <%= team.ageGroup %>
+      </p>
 
-      team.teamName = teamName.trim();
-      team.ageGroup = ageGroup.trim();
-      team.season = season.trim();
+      <p class="text-muted mb-1">
+        <strong>Season:</strong>
+        <%= team.season %>
+      </p>
 
-      await team.save();
+      <p class="text-muted mb-0">
+        <strong>Coach:</strong>
 
-      res.redirect(`/teams/${team._id}`);
-    } catch (err) {
-      console.error("Team update error:", err);
+        <% if (team.coach) { %>
 
-      res.status(500).send(
-        "Unable to update the team."
-      );
-    }
-  }
-);
+          <%= team.coach.firstName %>
+          <%= team.coach.lastName %>
 
-// Delete team and its related players and events
-router.delete(
-  "/:id",
-  auth,
-  requireRole("admin"),
-  async (req, res) => {
-    try {
-      if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-        return res.status(400).send("Invalid team ID.");
-      }
+        <% } else { %>
 
-      const team = await Team.findById(req.params.id);
+          Not assigned
 
-      if (!team) {
-        return res.status(404).send("Team not found.");
-      }
+        <% } %>
+      </p>
 
-      await Player.deleteMany({
-        team: team._id
-      });
+    </div>
 
-      await Event.deleteMany({
-        team: team._id
-      });
+    <% if (
+      user &&
+      (
+        user.role === "admin" ||
+        user.role === "coach"
+      )
+    ) { %>
 
-      await Team.findByIdAndDelete(team._id);
+      <div class="d-flex flex-wrap gap-2">
 
-      res.redirect("/teams");
-    } catch (err) {
-      console.error("Team deletion error:", err);
+        <a
+          href="/players/new?team=<%= team._id %>"
+          class="btn btn-primary"
+        >
+          Add Player
+        </a>
 
-      res.status(500).send(
-        "Unable to delete the team."
-      );
-    }
-  }
-);
+        <a
+          href="/teams/<%= team._id %>/edit"
+          class="btn btn-outline-primary"
+        >
+          Edit Team
+        </a>
 
-// Display one team and its roster
-router.get("/:id", auth, async (req, res) => {
-  try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).send("Invalid team ID.");
-    }
+        <a
+          href="/events/new?team=<%= team._id %>"
+          class="btn btn-outline-success"
+        >
+          Schedule Event
+        </a>
 
-    const team = await Team.findById(
-      req.params.id
-    ).populate(
-      "coach",
-      "firstName lastName"
-    );
+        <% if (user.role === "admin") { %>
 
-    if (!team) {
-      return res.status(404).send("Team not found.");
-    }
+          <form
+            action="/teams/<%= team._id %>?_method=DELETE"
+            method="POST"
+            onsubmit="return confirm('Delete this team and all related players and events?');"
+          >
 
-    const players = await Player.find({
-      team: team._id
-    }).sort({
-      lastName: 1,
-      firstName: 1
-    });
+            <button
+              type="submit"
+              class="btn btn-outline-danger"
+            >
+              Delete Team
+            </button>
 
-    res.render("teams/show", {
-      team,
-      players,
-      user: req.session.user
-    });
-  } catch (err) {
-    console.error("Team detail error:", err);
+          </form>
 
-    res.status(500).send(
-      "Unable to load team details."
-    );
-  }
-});
+        <% } %>
 
-// Create team
-router.post(
-  "/",
-  auth,
-  requireRole("admin", "coach"),
-  async (req, res) => {
-    const {
-      teamName,
-      ageGroup,
-      season
-    } = req.body;
+      </div>
 
-    if (!teamName || !ageGroup || !season) {
-      return res.status(400).render("teams/new", {
-        error: "Please complete every field.",
-        formData: req.body
-      });
-    }
+    <% } %>
 
-    try {
-      await Team.create({
-        teamName: teamName.trim(),
-        ageGroup: ageGroup.trim(),
-        season: season.trim(),
-        coach: req.session.user.id
-      });
+  </div>
 
-      res.redirect("/teams");
-    } catch (err) {
-      console.error("Team creation error:", err);
+  <div class="card shadow-sm">
 
-      res.status(500).render("teams/new", {
-        error: "Unable to create the team.",
-        formData: req.body
-      });
-    }
-  }
-);
+    <div class="card-body">
 
-module.exports = router;
+      <div
+        class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3"
+      >
+
+        <h2 class="h4 mb-0">
+          Team Roster
+        </h2>
+
+        <span class="badge text-bg-primary">
+          <%= players.length %>
+          Player<%= players.length === 1 ? "" : "s" %>
+        </span>
+
+      </div>
+
+      <% if (!players || players.length === 0) { %>
+
+        <div class="alert alert-info mb-0">
+
+          No players have been added to this team yet.
+
+          <% if (
+            user &&
+            (
+              user.role === "admin" ||
+              user.role === "coach"
+            )
+          ) { %>
+
+            <a
+              href="/players/new?team=<%= team._id %>"
+              class="alert-link"
+            >
+              Add the first player.
+            </a>
+
+          <% } %>
+
+        </div>
+
+      <% } else { %>
+
+        <div class="table-responsive">
+
+          <table class="table table-striped table-hover align-middle">
+
+            <thead>
+
+              <tr>
+                <th scope="col">Number</th>
+                <th scope="col">Player</th>
+                <th scope="col">Position</th>
+                <th scope="col">Parent / Guardian</th>
+                <th scope="col">Email</th>
+
+                <% if (
+                  user &&
+                  (
+                    user.role === "admin" ||
+                    user.role === "coach"
+                  )
+                ) { %>
+
+                  <th scope="col">
+                    Actions
+                  </th>
+
+                <% } %>
+
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              <% players.forEach(player => { %>
+
+                <tr>
+
+                  <td>
+                    <%= player.jerseyNumber ?? "—" %>
+                  </td>
+
+                  <td>
+                    <strong>
+                      <%= player.firstName %>
+                      <%= player.lastName %>
+                    </strong>
+                  </td>
+
+                  <td>
+                    <%= player.position || "—" %>
+                  </td>
+
+                  <td>
+                    <%= player.parentName || "—" %>
+                  </td>
+
+                  <td>
+
+                    <% if (player.parentEmail) { %>
+
+                      <a href="mailto:<%= player.parentEmail %>">
+                        <%= player.parentEmail %>
+                      </a>
+
+                    <% } else { %>
+
+                      —
+
+                    <% } %>
+
+                  </td>
+
+                  <% if (
+                    user &&
+                    (
+                      user.role === "admin" ||
+                      user.role === "coach"
+                    )
+                  ) { %>
+
+                    <td>
+
+                      <div class="d-flex flex-wrap gap-2">
+
+                        <a
+                          href="/players/<%= player._id %>/edit"
+                          class="btn btn-sm btn-outline-primary"
+                        >
+                          Edit
+                        </a>
+
+                        <% if (user.role === "admin") { %>
+
+                          <form
+                            action="/players/<%= player._id %>?_method=DELETE"
+                            method="POST"
+                            onsubmit="return confirm('Delete this player from the roster?');"
+                          >
+
+                            <button
+                              type="submit"
+                              class="btn btn-sm btn-outline-danger"
+                            >
+                              Delete
+                            </button>
+
+                          </form>
+
+                        <% } %>
+
+                      </div>
+
+                    </td>
+
+                  <% } %>
+
+                </tr>
+
+              <% }) %>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      <% } %>
+
+    </div>
+
+  </div>
+
+  <div class="mt-4">
+
+    <a
+      href="/teams"
+      class="btn btn-outline-secondary"
+    >
+      Back to Teams
+    </a>
+
+  </div>
+
+</main>
+
+<script
+  src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+></script>
+
+</body>
+</html>
