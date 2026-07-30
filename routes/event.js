@@ -7,15 +7,26 @@ const auth = require("../middleware/auth");
 
 const router = express.Router();
 
-// Display all events
+// Display all events with event-type filtering
 router.get("/", auth, async (req, res) => {
   try {
-    const events = await Event.find()
+    const type = req.query.type
+      ? req.query.type.trim()
+      : "";
+
+    const query = {};
+
+    if (type) {
+      query.eventType = type;
+    }
+
+    const events = await Event.find(query)
       .populate("team", "teamName ageGroup")
       .sort({ date: 1 });
 
     res.render("events/index", {
       events,
+      type,
       user: req.session.user
     });
   } catch (err) {
