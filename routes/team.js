@@ -8,12 +8,19 @@ const auth = require("../middleware/auth");
 
 const router = express.Router();
 
-// Show all teams with search
+// Show all teams with search and pagination
 router.get("/", auth, async (req, res) => {
   try {
     const search = req.query.search
       ? req.query.search.trim()
       : "";
+
+    const page = Math.max(
+      parseInt(req.query.page, 10) || 1,
+      1
+    );
+
+    const limit = 10;
 
     const query = {};
 
@@ -24,16 +31,31 @@ router.get("/", auth, async (req, res) => {
       };
     }
 
+    const totalTeams = await Team.countDocuments(query);
+
+    const totalPages = Math.max(
+      Math.ceil(totalTeams / limit),
+      1
+    );
+
+    const currentPage = Math.min(page, totalPages);
+    const skip = (currentPage - 1) * limit;
+
     const teams = await Team.find(query)
       .populate("coach", "firstName lastName")
       .sort({
         ageGroup: 1,
         teamName: 1
-      });
+      })
+      .skip(skip)
+      .limit(limit);
 
     res.render("teams/index", {
       teams,
       search,
+      page: currentPage,
+      totalPages,
+      totalTeams,
       user: req.session.user
     });
   } catch (err) {
