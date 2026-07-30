@@ -8,6 +8,12 @@ connectDB();
 
 const app = express();
 
+const mongoose = require('mongoose');
+
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('Database connected successfully'))
+  .catch((err) => console.error('Database Connection Error:', err));
+
 // Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
