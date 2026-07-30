@@ -7,7 +7,7 @@ const session = require("express-session");
 const methodOverride = require("method-override");
 const path = require("path");
 
-// Import local files
+// Import database connection
 const connectDB = require("./config/database");
 
 // Import routes
@@ -18,7 +18,7 @@ const playerRoutes = require("./routes/player");
 const eventRoutes = require("./routes/event");
 const announcementRoutes = require("./routes/announcement");
 
-// Initialize app
+// Initialize Express
 const app = express();
 
 // Connect to MongoDB
@@ -33,31 +33,33 @@ app.use(express.json());
 app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "public")));
 
-
+// Sessions
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "powersportshubsecret",
+    secret:
+      process.env.SESSION_SECRET ||
+      "powersportshubsecret",
     resave: false,
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24
+      maxAge: 1000 * 60 * 60 * 24 // 1 day
     }
   })
 );
 
-// Routes
+// Home page
+app.get("/", (req, res) => {
+  res.render("index");
+});
+
+// Application routes
 app.use("/", authRoutes);
 app.use("/dashboard", dashboardRoutes);
 app.use("/teams", teamRoutes);
 app.use("/players", playerRoutes);
 app.use("/events", eventRoutes);
 app.use("/announcements", announcementRoutes);
-
-// Home page
-app.get("/", (req, res) => {
-  res.render("index");
-});
 
 // 404 handler
 app.use((req, res) => {
@@ -67,7 +69,8 @@ app.use((req, res) => {
 // Error handler
 app.use((err, req, res, next) => {
   console.error(err);
-  res.status(500).send("Something went wrong");
+
+  res.status(500).send("Something went wrong.");
 });
 
 // Start server
